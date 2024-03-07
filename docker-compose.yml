@@ -1,0 +1,70 @@
+services:
+  batches:
+    build:
+      context: .
+      dockerfile: ./apps/batches/Dockerfile
+      target: development
+    command: yarn start:dev batches
+    depends_on:
+      - postgres
+    env_file:
+      - ./apps/batches/.env
+    ports:
+    - '3000:3000'
+   
+    volumes:
+    - .:/usr/src/app
+  auth:
+    build: 
+      context: .
+      dockerfile: ./apps/auth/Dockerfile
+      target: development
+    command: yarn start:dev auth
+    depends_on:
+      - postgres
+    env_file:
+      - ./apps/auth/.env
+    ports:
+    - '3001:3001'
+    volumes:
+    - .:/usr/src/app
+  postgres:
+      image: postgres:latest
+      # container_name: card_tracker
+      restart: unless-stopped
+      # env_file:
+      # - .:/usr/src
+      environment:
+        POSTGRES_PASSWORD: card_tracker
+        POSTGRES_DB: card_tracker
+        POSTGRES_USER: card_tracker
+        POSTGRES_HOST_AUTH_METHOD: trust
+        # POSTGRES_PASSWORD: root
+      ports:
+        - "5432:5432"
+     
+ 
+  #     volumes:
+  #       - postgres_data:/var/lib/postgresql/mysql_data
+  # # volumes:
+  #   postgres_data:
+
+  # mysql:
+  #   image: mysql
+
+  # mysql:
+  #     image: mysql:latest
+  #     restart: always
+  #     environment:
+  #       MYSQL_ROOT_PASSWORD: root
+  #       MYSQL_DATABASE: card_tracker
+  #       # MYSQL_USER: root
+  #       MYSQL_PASSWORD: root
+  #     ports:
+  #       - "3306:3306"
+  #     # volumes:
+  #     #   - mysql_data:/var/lib/mysql
+
+  # # mysql:
+  # #   image: mysql
+
