@@ -65,7 +65,7 @@ export class BatchController {
             registration_date: item.registratioN_DATE,
             state_of_residence: item.statE_OF_RESIDENCE,
             surname: item.surname,
-            status: item.status,
+            status: 0//item.status,
           };
           return editedResident;
         });

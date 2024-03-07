@@ -62,7 +62,7 @@ export class Card extends BaseEntity {
   @Column()
   state_of_residence: string;
 
-  @Column({ nullable: true, default: 0 })
+  @Column({  default: 0 })
   status: number; // for now 0 is defaultstatus, 1 is produced and 2 is provisioned
 
   @Column()
