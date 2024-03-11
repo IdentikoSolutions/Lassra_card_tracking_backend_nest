@@ -30,6 +30,7 @@ export class Receipt extends BaseEntity {
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   receivedAt: Date;
+  
 
   @ManyToOne(() => Batch)
   batch: Batch;
