@@ -49,8 +49,17 @@ export class CardService {
     // return count;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} card`;
+  async findOne(batchNo: string, lassraId: string) {
+    try {
+      const queryBuilder = await this.cardRepository.createQueryBuilder('card');
+      queryBuilder
+        .where('card.batchNo =:batchNo', { batchNo })
+        .andWhere('card.lassraId =:lassraId', { lassraId });
+      console.log(queryBuilder, 'QueryBuilder');
+      return queryBuilder.getOne();
+    } catch (e) {
+      throw new Error(e);
+    }
   }
 
   async update(id: number, updateCardDto: UpdateCardDto) {

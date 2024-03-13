@@ -40,11 +40,20 @@ export class CardController {
 
   @Get()
   findAll(@Query('batchNo') batchNo?: string) {
+    console.log('called');
     return this.cardService.findAll(batchNo);
   }
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.cardService.findOne(+id);
+  @Get('one/:lassraId')
+  findOne(
+    @Param('lassraId') lassraId: string,
+    @Query('batchNo') batchNo: string,
+  ) {
+    console.log(lassraId, batchNo);
+    try {
+      return this.cardService.findOne(batchNo, lassraId);
+    } catch (e) {
+      throw new HttpException(e, HttpStatus.EXPECTATION_FAILED);
+    }
   }
 
   @Patch(':id')
