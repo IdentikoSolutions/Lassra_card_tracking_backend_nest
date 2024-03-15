@@ -11,6 +11,8 @@ import { ReceiptModule } from './receipt/receipt.module';
 import { BatchModule } from './batch/batch.module';
 import { DevtoolsModule } from '@nestjs/devtools-integration';
 // import { CorsModule } from '@nestjs/platform-express';
+import { ProvisionModule } from './provision/provision.module';
+import { CardprovisionModule } from './cardprovision/cardprovision.module';
 
 @Module({
   imports: [
@@ -58,6 +60,8 @@ import { DevtoolsModule } from '@nestjs/devtools-integration';
     ReceiptModule,
     CardModule,
     CardReceiptModule,
+    ProvisionModule,
+    CardprovisionModule,
   ],
   controllers: [AppController],
   providers: [AppService, ConfigService],

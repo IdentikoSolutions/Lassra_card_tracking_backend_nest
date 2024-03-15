@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { CreateCardReceiptDto } from '../dto/create-cardreceipt.dto';
-import { UpdateCardReceiptDto } from '../dto/update-cardreceipt.dto';
+// import { UpdateCardReceiptDto } from '../dto/update-cardreceipt.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CardReceipt } from '../entities';
 import { CardReceiptRepository } from '../repository';
@@ -11,9 +11,9 @@ export class CardReceiptService {
     @InjectRepository(CardReceipt)
     private readonly cardReceiptRepository: CardReceiptRepository,
   ) {}
-  create(createCardReceiptDto: CreateCardReceiptDto) {
-    return 'This action adds a new cardreceipt';
-  }
+  // create(createCardReceiptDto: CreateCardReceiptDto) {
+  //   return 'This action adds a new cardreceipt';
+  // }
 
   async findAll(receipt_id: number) {
     if (!receipt_id) {
@@ -31,15 +31,15 @@ export class CardReceiptService {
     // });
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} cardreceipt`;
-  }
+  // findOne(id: number) {
+  //   return `This action returns a #${id} cardreceipt`;
+  // }
 
-  update(id: number, updateCardReceiptDto: UpdateCardReceiptDto) {
-    return `This action updates a #${id} cardreceipt`;
-  }
+  // update(id: number, updateCardReceiptDto: UpdateCardReceiptDto) {
+  //   return `This action updates a #${id} cardreceipt`;
+  // }
 
-  remove(id: number) {
-    return `This action removes a #${id} cardreceipt`;
-  }
+  // remove(id: number) {
+  //   return `This action removes a #${id} cardreceipt`;
+  // }
 }
