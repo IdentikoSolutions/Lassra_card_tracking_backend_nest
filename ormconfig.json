@@ -1,0 +1,20 @@
+{
+    "type": "postgres",
+    "host": "localhost",
+    "port": 5432,
+    "username": "card_tracker",
+    "password": "card_tracker",
+    "database": "card_tracker",
+    "entities": [
+      "/**/entities/*.entity.{js,ts}"
+    ],
+    "synchronize": false,
+    "migrations": [
+      "/libs/common/src/database/migrations/*.ts"
+    ],
+    "migrationsTableName": "migrations_TypeORM",
+    "cli": {
+      "migrationsDir": "/libs/commom/src/database/migrations"
+    }
+    
+   }

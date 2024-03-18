@@ -8,17 +8,26 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 
 @Module({
   imports: [
-    TypeOrmModule.forRoot({
-      type: 'postgres',
-      host: 'localhost' || 'postgres', // You can use environment variables if needed
-      port: 5432,
-      username: 'card_tracker',
-      password: 'card_tracker',
-      database: 'card_tracker',
-      entities: [__dirname + '/../**/*.entity{.ts,.js}'],
-      autoLoadEntities: true,
-      synchronize: true,
-      logging: true,
+    TypeOrmModule.forRootAsync({
+      useFactory: (configService: ConfigService) => ({
+        type: 'postgres',
+        host: configService.get('POSTGRES_HOST'), //'localhost' || 'postgres', // You can use environment variables if needed
+        port: configService.get('POSTGRES_PORT'),
+        username: configService.get('POSTGRES_USER'),
+        password: configService.get('POSTGRES_PASSWORD'),
+        database: configService.get('POSTGRES_DATABASE'),
+        entities: [__dirname + '/../**/*.entity{.ts,.js}'],
+        migrations: ['/../**/migrations/*.js'],
+        cli: {
+          migrationsDir: '/libs/commom/src/database/migrations',
+        },
+        // migrations: ['dist/batches/migrations/*.js'],
+        migrationsTableName: 'task_migrations',
+        autoLoadEntities: true,
+        synchronize: true,
+        logging: true,
+      }),
+      inject: [ConfigService],
     }),
   ],
 })

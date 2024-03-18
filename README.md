@@ -56,6 +56,10 @@ $ yarn run test:e2e
 
 # test coverage
 $ yarn run test:cov
+
+# create migration
+$ typeorm migration:create ./libs/common/src/database/migrations/init
+
 ```
 
 ## Support
