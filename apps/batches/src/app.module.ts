@@ -13,6 +13,7 @@ import { DevtoolsModule } from '@nestjs/devtools-integration';
 // import { CorsModule } from '@nestjs/platform-express';
 import { ProvisionModule } from './provision/provision.module';
 import { CardprovisionModule } from './cardprovision/cardprovision.module';
+import { DispatchModule } from './dispatch/dispatch.module';
 
 @Module({
   imports: [
@@ -62,6 +63,7 @@ import { CardprovisionModule } from './cardprovision/cardprovision.module';
     CardReceiptModule,
     ProvisionModule,
     CardprovisionModule,
+    DispatchModule,
   ],
   controllers: [AppController],
   providers: [AppService, ConfigService],
