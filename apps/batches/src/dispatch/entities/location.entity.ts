@@ -16,6 +16,6 @@ export class CardLocation {
   @Column()
   lassraId?: string;
 
-  @OneToOne(() => Card)
-  card: Card;
+//   @OneToOne(() => Card)
+//   card: Card;
 }

@@ -8,8 +8,6 @@ export class Dispatch {
   @Column()
   destination: string;
   @Column()
-  cardsCount: string;
-  @Column()
   dispatchStatus: string; //0 is initial,1 is out for dispatch,2 is dispatched
   @Column()
   createdBy?: string;
@@ -19,7 +17,9 @@ export class Dispatch {
   @Column()
   dispatchedAt: Date;
   @Column()
-  acknowlegdedAt: Date;
+  acknowledgedAt: Date;
+  @Column()
+  acknowledgedBy: string;
   @Column()
   dispatcher?: string;
 

@@ -6,6 +6,7 @@ import { Dispatch } from './entities/dispatch.entity';
 import { Repository } from 'typeorm';
 import { CardLocation } from './entities/location.entity';
 import { CardDispatch } from './entities/cardDispatch';
+import { AppController } from '../app.controller';
 
 @Injectable()
 export class DispatchService {
@@ -73,10 +74,28 @@ export class DispatchService {
 
     // return provision;
   }
-  createDispatch(createDispatchDto: CreateDispatchDto) {
-    return 'This action adds a new dispatch';
+  async createDispatch(createDispatchDto: CreateDispatchDto) {
+    const newDispatch = await this.dispatchRepository.create(createDispatchDto);
+    return await this.dispatchRepository.save(newDispatch);
   }
-  updateDispatch() {}
+  async updateDispatch(updateDispatchDto: UpdateDispatchDto, id: number) {
+    const dispatchToUpdate = await this.dispatchRepository.find({
+      where: { id: id },
+    })[0];
+    if (dispatchToUpdate === undefined) {
+      throw new Error('required Dispatch not found');
+    }
+    const updatedDispatch = {
+      ...dispatchToUpdate,
+      dispatchStatus: updateDispatchDto.dispatchStatus,
+      acknowledgedBy: updateDispatchDto.acknowledgedBy,
+    };
+    await this.dispatchRepository.save(updatedDispatch);
+    for (const card of updateDispatchDto.cardDispatch) {
+     const updatedCard =  await this.cardDispatchRepository.find({where:{lassraId:card.lassraId}})
+     await this.cardDispatchRepository.save(updatedCard);
+     //this schould be done in transaction
+  }
   findAll() {
     return `This action returns all dispatch`;
   }

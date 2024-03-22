@@ -297,7 +297,13 @@ var BatchController = /** @class */ (function () {
                                                     registration_date: item.registratioN_DATE,
                                                     state_of_residence: item.statE_OF_RESIDENCE,
                                                     surname: item.surname,
-                                                    status: 0, //item.status,
+                                                    status: 0,
+                                                    cardLocation: {
+                                                        lassraId: item.lasrraId,
+                                                        currentLocation: 'Head office',
+                                                        collectionCenter: item.contacT_LGA,
+                                                    },
+                                                    //item.status,
                                                 };
                                                 return editedResident;
                                             })];
@@ -1843,6 +1849,17 @@ exports.DispatchModule = DispatchModule;
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
 
+var __assign = (this && this.__assign) || function () {
+    __assign = Object.assign || function(t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+            s = arguments[i];
+            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+                t[p] = s[p];
+        }
+        return t;
+    };
+    return __assign.apply(this, arguments);
+};
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -1894,6 +1911,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.DispatchService = void 0;
 var common_1 = __webpack_require__(/*! @nestjs/common */ "@nestjs/common");
+var update_dispatch_dto_1 = __webpack_require__(/*! ./dto/update-dispatch.dto */ "./apps/batches/src/dispatch/dto/update-dispatch.dto.ts");
 var typeorm_1 = __webpack_require__(/*! @nestjs/typeorm */ "@nestjs/typeorm");
 var dispatch_entity_1 = __webpack_require__(/*! ./entities/dispatch.entity */ "./apps/batches/src/dispatch/entities/dispatch.entity.ts");
 var typeorm_2 = __webpack_require__(/*! typeorm */ "typeorm");
@@ -1948,20 +1966,72 @@ var DispatchService = /** @class */ (function () {
         });
     };
     DispatchService.prototype.createDispatch = function (createDispatchDto) {
-        return 'This action adds a new dispatch';
+        return __awaiter(this, void 0, void 0, function () {
+            var newDispatch;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, this.dispatchRepository.create(createDispatchDto)];
+                    case 1:
+                        newDispatch = _a.sent();
+                        return [4 /*yield*/, this.dispatchRepository.save(newDispatch)];
+                    case 2: return [2 /*return*/, _a.sent()];
+                }
+            });
+        });
     };
-    DispatchService.prototype.updateDispatch = function () { };
-    DispatchService.prototype.findAll = function () {
-        return "This action returns all dispatch";
-    };
-    DispatchService.prototype.findOne = function (id) {
-        return "This action returns a #".concat(id, " dispatch");
-    };
-    DispatchService.prototype.update = function (id, updateDispatchDto) {
-        return "This action updates a #".concat(id, " dispatch");
-    };
-    DispatchService.prototype.remove = function (id) {
-        return "This action removes a #".concat(id, " dispatch");
+    DispatchService.prototype.updateDispatch = function (updateDispatchDto, id) {
+        return __awaiter(this, void 0, void 0, function () {
+            var dispatchToUpdate, updatedDispatch, _i, _a, card, updatedCard;
+            return __generator(this, function (_b) {
+                switch (_b.label) {
+                    case 0: return [4 /*yield*/, this.dispatchRepository.find({
+                            where: { id: id },
+                        })[0]];
+                    case 1:
+                        dispatchToUpdate = _b.sent();
+                        if (dispatchToUpdate === undefined) {
+                            throw new Error('required Dispatch not found');
+                        }
+                        updatedDispatch = __assign(__assign({}, dispatchToUpdate), { dispatchStatus: updateDispatchDto.dispatchStatus, acknowledgedBy: updateDispatchDto.acknowledgedBy });
+                        return [4 /*yield*/, this.dispatchRepository.save(updatedDispatch)];
+                    case 2:
+                        _b.sent();
+                        _i = 0, _a = updateDispatchDto.cardDispatch;
+                        _b.label = 3;
+                    case 3:
+                        if (!(_i < _a.length)) return [3 /*break*/, 7];
+                        card = _a[_i];
+                        return [4 /*yield*/, this.cardDispatchRepository.find({ where: { lassraId: card.lassraId } })];
+                    case 4:
+                        updatedCard = _b.sent();
+                        return [4 /*yield*/, this.cardDispatchRepository.save(updatedCard)];
+                    case 5:
+                        _b.sent();
+                        _b.label = 6;
+                    case 6:
+                        _i++;
+                        return [3 /*break*/, 3];
+                    case 7:
+                        findAll();
+                        {
+                            return [2 /*return*/, "This action returns all dispatch"];
+                        }
+                        findOne(id, number);
+                        {
+                            return [2 /*return*/, "This action returns a #".concat(id, " dispatch")];
+                        }
+                        update(id, number, updateDispatchDto, update_dispatch_dto_1.UpdateDispatchDto);
+                        {
+                            return [2 /*return*/, "This action updates a #".concat(id, " dispatch")];
+                        }
+                        remove(id, number);
+                        {
+                            return [2 /*return*/, "This action removes a #".concat(id, " dispatch")];
+                        }
+                        return [2 /*return*/];
+                }
+            });
+        });
     };
     var _a, _b, _c;
     DispatchService = __decorate([
@@ -1978,18 +2048,126 @@ exports.DispatchService = DispatchService;
 
 /***/ }),
 
+/***/ "./apps/batches/src/dispatch/dto/create-card-dispatch.dto.ts":
+/*!*******************************************************************!*\
+  !*** ./apps/batches/src/dispatch/dto/create-card-dispatch.dto.ts ***!
+  \*******************************************************************/
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.CreateCardDispatchDto = void 0;
+var class_validator_1 = __webpack_require__(/*! class-validator */ "class-validator");
+var create_dispatch_dto_1 = __webpack_require__(/*! ./create-dispatch.dto */ "./apps/batches/src/dispatch/dto/create-dispatch.dto.ts");
+var class_transformer_1 = __webpack_require__(/*! class-transformer */ "class-transformer");
+var CreateCardDispatchDto = /** @class */ (function () {
+    function CreateCardDispatchDto() {
+    }
+    var _a;
+    __decorate([
+        (0, class_validator_1.IsString)(),
+        (0, class_validator_1.IsNotEmpty)(),
+        __metadata("design:type", String)
+    ], CreateCardDispatchDto.prototype, "lassraId", void 0);
+    __decorate([
+        (0, class_validator_1.IsString)(),
+        (0, class_validator_1.IsNotEmpty)(),
+        __metadata("design:type", String)
+    ], CreateCardDispatchDto.prototype, "destination", void 0);
+    __decorate([
+        (0, class_validator_1.IsString)(),
+        (0, class_validator_1.IsNotEmpty)(),
+        __metadata("design:type", String)
+    ], CreateCardDispatchDto.prototype, "dispatchStatus", void 0);
+    __decorate([
+        (0, class_validator_1.IsString)(),
+        (0, class_validator_1.IsNotEmpty)(),
+        (0, class_transformer_1.Type)(function () { return create_dispatch_dto_1.CreateDispatchDto; }),
+        __metadata("design:type", typeof (_a = typeof create_dispatch_dto_1.CreateDispatchDto !== "undefined" && create_dispatch_dto_1.CreateDispatchDto) === "function" ? _a : Object)
+    ], CreateCardDispatchDto.prototype, "dispatch", void 0);
+    return CreateCardDispatchDto;
+}());
+exports.CreateCardDispatchDto = CreateCardDispatchDto;
+
+
+/***/ }),
+
 /***/ "./apps/batches/src/dispatch/dto/create-dispatch.dto.ts":
 /*!**************************************************************!*\
   !*** ./apps/batches/src/dispatch/dto/create-dispatch.dto.ts ***!
   \**************************************************************/
-/***/ ((__unused_webpack_module, exports) => {
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
 
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.CreateDispatchDto = void 0;
+var class_transformer_1 = __webpack_require__(/*! class-transformer */ "class-transformer");
+var class_validator_1 = __webpack_require__(/*! class-validator */ "class-validator");
+var create_card_dispatch_dto_1 = __webpack_require__(/*! ./create-card-dispatch.dto */ "./apps/batches/src/dispatch/dto/create-card-dispatch.dto.ts");
 var CreateDispatchDto = /** @class */ (function () {
     function CreateDispatchDto() {
     }
+    var _a, _b, _c;
+    __decorate([
+        (0, class_validator_1.IsString)(),
+        (0, class_validator_1.IsNotEmpty)(),
+        __metadata("design:type", String)
+    ], CreateDispatchDto.prototype, "destination", void 0);
+    __decorate([
+        (0, class_validator_1.IsString)(),
+        __metadata("design:type", String)
+    ], CreateDispatchDto.prototype, "dispatchStatus", void 0);
+    __decorate([
+        (0, class_validator_1.IsString)(),
+        __metadata("design:type", String)
+    ], CreateDispatchDto.prototype, "createdBy", void 0);
+    __decorate([
+        (0, class_validator_1.IsDate)(),
+        (0, class_transformer_1.Type)(function () { return Date; }),
+        __metadata("design:type", typeof (_a = typeof Date !== "undefined" && Date) === "function" ? _a : Object)
+    ], CreateDispatchDto.prototype, "createdAt", void 0);
+    __decorate([
+        (0, class_validator_1.IsDate)(),
+        (0, class_transformer_1.Type)(function () { return Date; }),
+        __metadata("design:type", typeof (_b = typeof Date !== "undefined" && Date) === "function" ? _b : Object)
+    ], CreateDispatchDto.prototype, "dispatchedAt", void 0);
+    __decorate([
+        (0, class_validator_1.IsDate)(),
+        (0, class_transformer_1.Type)(function () { return Date; }),
+        __metadata("design:type", typeof (_c = typeof Date !== "undefined" && Date) === "function" ? _c : Object)
+    ], CreateDispatchDto.prototype, "acknowledgedAt", void 0);
+    __decorate([
+        (0, class_validator_1.IsString)(),
+        __metadata("design:type", String)
+    ], CreateDispatchDto.prototype, "acknowledgedBy", void 0);
+    __decorate([
+        (0, class_validator_1.IsString)(),
+        (0, class_validator_1.IsNotEmpty)(),
+        __metadata("design:type", String)
+    ], CreateDispatchDto.prototype, "dispatcher", void 0);
+    __decorate([
+        (0, class_validator_1.IsNotEmpty)(),
+        (0, class_transformer_1.Type)(function () { return create_card_dispatch_dto_1.CreateCardDispatchDto; }),
+        __metadata("design:type", Array)
+    ], CreateDispatchDto.prototype, "cardDispatch", void 0);
     return CreateDispatchDto;
 }());
 exports.CreateDispatchDto = CreateDispatchDto;
@@ -2121,10 +2299,6 @@ var Dispatch = /** @class */ (function () {
     __decorate([
         (0, typeorm_1.Column)(),
         __metadata("design:type", String)
-    ], Dispatch.prototype, "cardsCount", void 0);
-    __decorate([
-        (0, typeorm_1.Column)(),
-        __metadata("design:type", String)
     ], Dispatch.prototype, "dispatchStatus", void 0);
     __decorate([
         (0, typeorm_1.Column)(),
@@ -2141,7 +2315,11 @@ var Dispatch = /** @class */ (function () {
     __decorate([
         (0, typeorm_1.Column)(),
         __metadata("design:type", typeof (_c = typeof Date !== "undefined" && Date) === "function" ? _c : Object)
-    ], Dispatch.prototype, "acknowlegdedAt", void 0);
+    ], Dispatch.prototype, "acknowledgedAt", void 0);
+    __decorate([
+        (0, typeorm_1.Column)(),
+        __metadata("design:type", String)
+    ], Dispatch.prototype, "acknowledgedBy", void 0);
     __decorate([
         (0, typeorm_1.Column)(),
         __metadata("design:type", String)
@@ -2178,11 +2356,9 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.CardLocation = void 0;
 var typeorm_1 = __webpack_require__(/*! typeorm */ "typeorm");
-var entities_1 = __webpack_require__(/*! ../../entities */ "./apps/batches/src/entities/index.ts");
 var CardLocation = /** @class */ (function () {
     function CardLocation() {
     }
-    var _a;
     __decorate([
         (0, typeorm_1.PrimaryGeneratedColumn)(),
         __metadata("design:type", Number)
@@ -2207,10 +2383,6 @@ var CardLocation = /** @class */ (function () {
         (0, typeorm_1.Column)(),
         __metadata("design:type", String)
     ], CardLocation.prototype, "lassraId", void 0);
-    __decorate([
-        (0, typeorm_1.OneToOne)(function () { return entities_1.Card; }),
-        __metadata("design:type", typeof (_a = typeof entities_1.Card !== "undefined" && entities_1.Card) === "function" ? _a : Object)
-    ], CardLocation.prototype, "card", void 0);
     return CardLocation;
 }());
 exports.CardLocation = CardLocation;

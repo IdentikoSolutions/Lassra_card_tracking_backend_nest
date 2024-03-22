@@ -66,7 +66,13 @@ export class BatchController {
               registration_date: item.registratioN_DATE,
               state_of_residence: item.statE_OF_RESIDENCE,
               surname: item.surname,
-              status: 0, //item.status,
+              status: 0,
+              cardLocation: {
+                lassraId: item.lasrraId,
+                currentLocation: 'Head office',
+                collectionCenter: item.contacT_LGA,
+              },
+              //item.status,
             };
             return editedResident;
           });
