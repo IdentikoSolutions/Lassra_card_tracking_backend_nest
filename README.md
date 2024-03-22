@@ -1,4 +1,8 @@
  //"ts-node ./node_modules/typeorm/cli",
+//      "typeorm-ts-node-commonjs",
+To generate a migration: npm run typeorm:create-migration -- migrations/init  
+To run migratios: npm run typeorm:run-migrations 
+To revert migration:npm run typeorm:revert-migrations
 <p align="center">
   <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="200" alt="Nest Logo" /></a>
 </p>

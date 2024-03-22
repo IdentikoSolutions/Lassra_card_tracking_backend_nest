@@ -1,32 +1,25 @@
-import {
-  BaseEntity,
-  Column,
-  Entity,
-  ManyToOne,
-  OneToOne,
-  PrimaryGeneratedColumn,
-  Relation,
-} from 'typeorm';
+import { Column, Entity, ManyToOne, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { Batch } from './batch.entity';
 import { CardReceipt } from './cardreceipt.entity';
+import { CardLocation } from '../dispatch/entities/location.entity';
 // import { CardReceipt } from '../../cardreceipt/entities/cardreceipt.entity';
 
 @Entity('cards')
-export class Card extends BaseEntity {
+export class Card {
   @PrimaryGeneratedColumn({})
   id: number;
 
   @Column({})
   batchNo: string;
 
-  @Column()
+  @Column({ nullable: false })
   contact_LGA: string;
 
   @Column()
   country_code: string;
 
   @Column()
-  current_house_number: string;
+  current_house_number: string; //shouldd v\\be string
   @Column()
   current_street: string;
   @Column()
@@ -62,7 +55,7 @@ export class Card extends BaseEntity {
   @Column()
   state_of_residence: string;
 
-  @Column({  default: 0 })
+  @Column({ default: 0 })
   status: number; // for now 0 is defaultstatus, 1 is produced and 2 is provisioned
 
   @Column()
@@ -73,4 +66,12 @@ export class Card extends BaseEntity {
   batch: Batch;
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdAt: Date;
+  @OneToOne(() => CardLocation)
+  cardLocation: CardLocation;
+  // @Column({ default: 'Head office' })
+  // currentLocation: string;
+  // @Column({ nullable: true })
+  // collectionCenter: string;
+  // @Column({ default: false })
+  // pendingRequest: boolean;
 }

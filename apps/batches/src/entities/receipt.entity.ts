@@ -10,7 +10,7 @@ import { Batch } from './batch.entity';
 import { CardReceipt } from './cardreceipt.entity';
 
 @Entity('receipts')
-export class Receipt extends BaseEntity {
+export class Receipt {
   @PrimaryGeneratedColumn()
   id: number;
 
@@ -30,7 +30,6 @@ export class Receipt extends BaseEntity {
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   receivedAt: Date;
-  
 
   @ManyToOne(() => Batch)
   batch: Batch;
