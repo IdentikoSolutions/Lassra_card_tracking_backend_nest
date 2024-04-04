@@ -1,6 +1,12 @@
-import { Column, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  OneToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 import { Card } from '../../entities';
-
+@Entity()
 export class CardLocation {
   @PrimaryGeneratedColumn()
   id: number;
@@ -12,10 +18,10 @@ export class CardLocation {
   @Column()
   requestedDelivery: boolean;
   @Column()
-  previousLocations: string; //0 is initial,1 is out for dispatch,2 is dispatched
-  @Column()
-  lassraId?: string;
-
-//   @OneToOne(() => Card)
-//   card: Card;
+  previousLocations: string;
+  @Column({ unique: true })
+  lassraId: string;
+  @OneToOne(() => Card)
+  @JoinColumn()
+  card: Card;
 }

@@ -33,7 +33,7 @@ import { dataSourceOptions } from '../../../../typeorm.config';
     // }),
   ],
 })
-export class DatabaseModule extends ConfigurableModuleClass {
+export class DatabaseModule {
   // static forFeature(models: ModelDefinition[]) {
   //   return MongooseModule.forFeature(models);
   // }

@@ -58,7 +58,7 @@ exports.AppModule = void 0;
 var common_1 = __webpack_require__(/*! @nestjs/common */ "@nestjs/common");
 var app_service_1 = __webpack_require__(/*! ./app.service */ "./apps/batches/src/app.service.ts");
 var app_controller_1 = __webpack_require__(/*! ./app.controller */ "./apps/batches/src/app.controller.ts");
-var common_2 = __webpack_require__(Object(function webpackMissingModule() { var e = new Error("Cannot find module '@app/common'"); e.code = 'MODULE_NOT_FOUND'; throw e; }()));
+var common_2 = __webpack_require__(/*! @app/common */ "./libs/common/src/index.ts");
 var typeorm_1 = __webpack_require__(/*! @nestjs/typeorm */ "@nestjs/typeorm");
 var entities_1 = __webpack_require__(/*! ./entities */ "./apps/batches/src/entities/index.ts");
 var config_1 = __webpack_require__(/*! @nestjs/config */ "@nestjs/config");
@@ -77,12 +77,6 @@ var AppModule = /** @class */ (function () {
     AppModule = __decorate([
         (0, common_1.Module)({
             imports: [
-                // DatabaseModule,
-                // CorsModule.forRoot({
-                //   origin: '*',
-                //   methods: ['GET', 'POST', 'PUT', 'DELETE'],
-                //   allowedHeaders: ['Content-Type', 'Authorization'],
-                // }),
                 devtools_integration_1.DevtoolsModule.register({
                     http: process.env.NODE_ENV !== 'production',
                 }),
@@ -106,16 +100,6 @@ var AppModule = /** @class */ (function () {
                     }); },
                     inject: [config_1.ConfigService],
                 }),
-                // TypeOrmModule.forRoot({
-                //   type: 'postgres',
-                //   host: 'localhost',
-                //   port: 5432,
-                //   username: 'card_tracker',
-                //   password: 'card_tracker',
-                //   database: 'card_tracker',
-                //   entities: [__dirname + '/**/*.entity{.ts,.js}'],
-                //   synchronize: true, // In development, set to true; in production, set to false
-                // }),
                 typeorm_1.TypeOrmModule.forFeature([entities_1.Batch, entities_1.Card, entities_1.Receipt, entities_1.CardReceipt]),
                 batch_module_1.BatchModule,
                 receipt_module_1.ReceiptModule,
@@ -869,7 +853,7 @@ exports.CardModule = void 0;
 var common_1 = __webpack_require__(/*! @nestjs/common */ "@nestjs/common");
 var card_service_1 = __webpack_require__(/*! ./card.service */ "./apps/batches/src/card/card.service.ts");
 var card_controller_1 = __webpack_require__(/*! ./card.controller */ "./apps/batches/src/card/card.controller.ts");
-var common_2 = __webpack_require__(Object(function webpackMissingModule() { var e = new Error("Cannot find module '@app/common'"); e.code = 'MODULE_NOT_FOUND'; throw e; }()));
+var common_2 = __webpack_require__(/*! @app/common */ "./libs/common/src/index.ts");
 var typeorm_1 = __webpack_require__(/*! @nestjs/typeorm */ "@nestjs/typeorm");
 var batch_entity_1 = __webpack_require__(/*! ../entities/batch.entity */ "./apps/batches/src/entities/batch.entity.ts");
 var card_entity_1 = __webpack_require__(/*! ../entities/card.entity */ "./apps/batches/src/entities/card.entity.ts");
@@ -1019,7 +1003,7 @@ var CardService = /** @class */ (function () {
                     case 1:
                         queryBuilder = _a.sent();
                         queryBuilder
-                            .where('card.batchNo =:batchNo', { batchNo: batchNo })
+                            // .where('card.batchNo =:batchNo', { batchNo })
                             .andWhere('card.lassraId =:lassraId', { lassraId: lassraId });
                         console.log(queryBuilder, 'QueryBuilder');
                         return [2 /*return*/, queryBuilder.getOne()];
@@ -1177,7 +1161,7 @@ exports.CardprovisionModule = void 0;
 var common_1 = __webpack_require__(/*! @nestjs/common */ "@nestjs/common");
 var cardprovision_service_1 = __webpack_require__(/*! ./cardprovision.service */ "./apps/batches/src/cardprovision/cardprovision.service.ts");
 var cardprovision_controller_1 = __webpack_require__(/*! ./cardprovision.controller */ "./apps/batches/src/cardprovision/cardprovision.controller.ts");
-var common_2 = __webpack_require__(Object(function webpackMissingModule() { var e = new Error("Cannot find module '@app/common'"); e.code = 'MODULE_NOT_FOUND'; throw e; }()));
+var common_2 = __webpack_require__(/*! @app/common */ "./libs/common/src/index.ts");
 var typeorm_1 = __webpack_require__(/*! @nestjs/typeorm */ "@nestjs/typeorm");
 var entities_1 = __webpack_require__(/*! ../entities */ "./apps/batches/src/entities/index.ts");
 var provision_entity_1 = __webpack_require__(/*! ../provision/entities/provision.entity */ "./apps/batches/src/provision/entities/provision.entity.ts");
@@ -1564,7 +1548,7 @@ exports.CardReceiptModule = void 0;
 var common_1 = __webpack_require__(/*! @nestjs/common */ "@nestjs/common");
 var cardreceipt_service_1 = __webpack_require__(/*! ./cardreceipt.service */ "./apps/batches/src/cardreceipt/cardreceipt.service.ts");
 var cardreceipt_controller_1 = __webpack_require__(/*! ./cardreceipt.controller */ "./apps/batches/src/cardreceipt/cardreceipt.controller.ts");
-var common_2 = __webpack_require__(Object(function webpackMissingModule() { var e = new Error("Cannot find module '@app/common'"); e.code = 'MODULE_NOT_FOUND'; throw e; }()));
+var common_2 = __webpack_require__(/*! @app/common */ "./libs/common/src/index.ts");
 var typeorm_1 = __webpack_require__(/*! @nestjs/typeorm */ "@nestjs/typeorm");
 // import { Batch } from 'typeorm';
 // import { Receipt } from '../entities/receipt.entity';
@@ -1708,21 +1692,112 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __generator = (this && this.__generator) || function (thisArg, body) {
+    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
+    return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
+    function verb(n) { return function (v) { return step([n, v]); }; }
+    function step(op) {
+        if (f) throw new TypeError("Generator is already executing.");
+        while (_) try {
+            if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
+            if (y = 0, t) op = [op[0] & 2, t.value];
+            switch (op[0]) {
+                case 0: case 1: t = op; break;
+                case 4: _.label++; return { value: op[1], done: false };
+                case 5: _.label++; y = op[1]; op = [0]; continue;
+                case 7: op = _.ops.pop(); _.trys.pop(); continue;
+                default:
+                    if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
+                    if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
+                    if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
+                    if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
+                    if (t[2]) _.ops.pop();
+                    _.trys.pop(); continue;
+            }
+            op = body.call(thisArg, _);
+        } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
+        if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
+    }
+};
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.DispatchController = void 0;
 var common_1 = __webpack_require__(/*! @nestjs/common */ "@nestjs/common");
 var dispatch_service_1 = __webpack_require__(/*! ./dispatch.service */ "./apps/batches/src/dispatch/dispatch.service.ts");
 var create_dispatch_dto_1 = __webpack_require__(/*! ./dto/create-dispatch.dto */ "./apps/batches/src/dispatch/dto/create-dispatch.dto.ts");
 var update_dispatch_dto_1 = __webpack_require__(/*! ./dto/update-dispatch.dto */ "./apps/batches/src/dispatch/dto/update-dispatch.dto.ts");
+var typeorm_1 = __webpack_require__(/*! @nestjs/typeorm */ "@nestjs/typeorm");
+var typeorm_2 = __webpack_require__(/*! typeorm */ "typeorm");
+var location_entity_1 = __webpack_require__(/*! ./entities/location.entity */ "./apps/batches/src/dispatch/entities/location.entity.ts");
+var entities_1 = __webpack_require__(/*! ../entities */ "./apps/batches/src/entities/index.ts");
 var DispatchController = /** @class */ (function () {
-    function DispatchController(dispatchService) {
+    function DispatchController(dispatchService, cardLocationRepository, cardRepository) {
         this.dispatchService = dispatchService;
+        this.cardLocationRepository = cardLocationRepository;
+        this.cardRepository = cardRepository;
     }
     DispatchController.prototype.create = function (createDispatchDto) {
         return this.dispatchService.createDispatch(createDispatchDto);
     };
+    DispatchController.prototype.seedcardLocation = function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var seed, cards, locationsData, _i, locationsData_1, x, newLocData, e_1;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        console.log('seeding started');
+                        _a.label = 1;
+                    case 1:
+                        _a.trys.push([1, 8, , 9]);
+                        return [4 /*yield*/, this.cardLocationRepository.find({})];
+                    case 2:
+                        seed = _a.sent();
+                        if (seed.length)
+                            throw new Error('Locations seeded');
+                        return [4 /*yield*/, this.cardRepository.find({})];
+                    case 3:
+                        cards = _a.sent();
+                        locationsData = cards.map(function (card) { return ({
+                            lassraId: card.lassraId,
+                            currentLocation: 'Head office',
+                            collectionCenter: card.contact_LGA,
+                            requestedDelivery: false,
+                            previousLocations: 'head',
+                            card: card,
+                        }); });
+                        _i = 0, locationsData_1 = locationsData;
+                        _a.label = 4;
+                    case 4:
+                        if (!(_i < locationsData_1.length)) return [3 /*break*/, 7];
+                        x = locationsData_1[_i];
+                        newLocData = this.cardLocationRepository.create(x);
+                        return [4 /*yield*/, this.cardLocationRepository.save(newLocData)];
+                    case 5:
+                        _a.sent();
+                        console.log(newLocData);
+                        _a.label = 6;
+                    case 6:
+                        _i++;
+                        return [3 /*break*/, 4];
+                    case 7: return [2 /*return*/, 'seeding successful'];
+                    case 8:
+                        e_1 = _a.sent();
+                        throw new common_1.HttpException('Database already seeded', common_1.HttpStatus.FORBIDDEN);
+                    case 9: return [2 /*return*/];
+                }
+            });
+        });
+    };
     DispatchController.prototype.getCardForDispatch = function (batchNo, lassraId, collectionCenter) {
-        console.log(batchNo, collectionCenter);
+        // console.log(batchNo, collectionCenter);
         try {
             return this.dispatchService.getCardforDispatch(batchNo, lassraId, collectionCenter);
         }
@@ -1731,7 +1806,16 @@ var DispatchController = /** @class */ (function () {
         }
     };
     DispatchController.prototype.findAll = function () {
-        return this.dispatchService.findAll();
+        return __awaiter(this, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        console.log('COmtrollers');
+                        return [4 /*yield*/, this.dispatchService.findAll()];
+                    case 1: return [2 /*return*/, _a.sent()];
+                }
+            });
+        });
     };
     DispatchController.prototype.findOne = function (id) {
         return this.dispatchService.findOne(+id);
@@ -1742,7 +1826,7 @@ var DispatchController = /** @class */ (function () {
     DispatchController.prototype.remove = function (id) {
         return this.dispatchService.remove(+id);
     };
-    var _a, _b, _c;
+    var _a, _b, _c, _d, _e;
     __decorate([
         (0, common_1.Post)(),
         __param(0, (0, common_1.Body)()),
@@ -1750,6 +1834,12 @@ var DispatchController = /** @class */ (function () {
         __metadata("design:paramtypes", [typeof (_a = typeof create_dispatch_dto_1.CreateDispatchDto !== "undefined" && create_dispatch_dto_1.CreateDispatchDto) === "function" ? _a : Object]),
         __metadata("design:returntype", void 0)
     ], DispatchController.prototype, "create", null);
+    __decorate([
+        (0, common_1.Get)('seed'),
+        __metadata("design:type", Function),
+        __metadata("design:paramtypes", []),
+        __metadata("design:returntype", Promise)
+    ], DispatchController.prototype, "seedcardLocation", null);
     __decorate([
         (0, common_1.Get)(),
         __param(0, (0, common_1.Query)('batchNo')),
@@ -1760,10 +1850,10 @@ var DispatchController = /** @class */ (function () {
         __metadata("design:returntype", void 0)
     ], DispatchController.prototype, "getCardForDispatch", null);
     __decorate([
-        (0, common_1.Get)(),
+        (0, common_1.Get)('orders'),
         __metadata("design:type", Function),
         __metadata("design:paramtypes", []),
-        __metadata("design:returntype", void 0)
+        __metadata("design:returntype", Promise)
     ], DispatchController.prototype, "findAll", null);
     __decorate([
         (0, common_1.Get)(':id'),
@@ -1789,7 +1879,9 @@ var DispatchController = /** @class */ (function () {
     ], DispatchController.prototype, "remove", null);
     DispatchController = __decorate([
         (0, common_1.Controller)('dispatch'),
-        __metadata("design:paramtypes", [typeof (_c = typeof dispatch_service_1.DispatchService !== "undefined" && dispatch_service_1.DispatchService) === "function" ? _c : Object])
+        __param(1, (0, typeorm_1.InjectRepository)(location_entity_1.CardLocation)),
+        __param(2, (0, typeorm_1.InjectRepository)(entities_1.Card)),
+        __metadata("design:paramtypes", [typeof (_c = typeof dispatch_service_1.DispatchService !== "undefined" && dispatch_service_1.DispatchService) === "function" ? _c : Object, typeof (_d = typeof typeorm_2.Repository !== "undefined" && typeorm_2.Repository) === "function" ? _d : Object, typeof (_e = typeof typeorm_2.Repository !== "undefined" && typeorm_2.Repository) === "function" ? _e : Object])
     ], DispatchController);
     return DispatchController;
 }());
@@ -1816,10 +1908,10 @@ exports.DispatchModule = void 0;
 var common_1 = __webpack_require__(/*! @nestjs/common */ "@nestjs/common");
 var dispatch_service_1 = __webpack_require__(/*! ./dispatch.service */ "./apps/batches/src/dispatch/dispatch.service.ts");
 var dispatch_controller_1 = __webpack_require__(/*! ./dispatch.controller */ "./apps/batches/src/dispatch/dispatch.controller.ts");
-var common_2 = __webpack_require__(Object(function webpackMissingModule() { var e = new Error("Cannot find module '@app/common'"); e.code = 'MODULE_NOT_FOUND'; throw e; }()));
+var common_2 = __webpack_require__(/*! @app/common */ "./libs/common/src/index.ts");
 var typeorm_1 = __webpack_require__(/*! @nestjs/typeorm */ "@nestjs/typeorm");
 var entities_1 = __webpack_require__(/*! ../entities */ "./apps/batches/src/entities/index.ts");
-var cardDispatch_1 = __webpack_require__(/*! ./entities/cardDispatch */ "./apps/batches/src/dispatch/entities/cardDispatch.ts");
+var cardDispatch_entity_1 = __webpack_require__(/*! ./entities/cardDispatch.entity */ "./apps/batches/src/dispatch/entities/cardDispatch.entity.ts");
 var dispatch_entity_1 = __webpack_require__(/*! ./entities/dispatch.entity */ "./apps/batches/src/dispatch/entities/dispatch.entity.ts");
 var location_entity_1 = __webpack_require__(/*! ./entities/location.entity */ "./apps/batches/src/dispatch/entities/location.entity.ts");
 var DispatchModule = /** @class */ (function () {
@@ -1829,7 +1921,7 @@ var DispatchModule = /** @class */ (function () {
         (0, common_1.Module)({
             imports: [
                 common_2.DatabaseModule,
-                typeorm_1.TypeOrmModule.forFeature([entities_1.Card, dispatch_entity_1.Dispatch, cardDispatch_1.CardDispatch, location_entity_1.CardLocation]),
+                typeorm_1.TypeOrmModule.forFeature([entities_1.Card, dispatch_entity_1.Dispatch, cardDispatch_entity_1.CardDispatch, location_entity_1.CardLocation]),
             ],
             controllers: [dispatch_controller_1.DispatchController],
             providers: [dispatch_service_1.DispatchService],
@@ -1911,51 +2003,67 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.DispatchService = void 0;
 var common_1 = __webpack_require__(/*! @nestjs/common */ "@nestjs/common");
-var update_dispatch_dto_1 = __webpack_require__(/*! ./dto/update-dispatch.dto */ "./apps/batches/src/dispatch/dto/update-dispatch.dto.ts");
 var typeorm_1 = __webpack_require__(/*! @nestjs/typeorm */ "@nestjs/typeorm");
 var dispatch_entity_1 = __webpack_require__(/*! ./entities/dispatch.entity */ "./apps/batches/src/dispatch/entities/dispatch.entity.ts");
 var typeorm_2 = __webpack_require__(/*! typeorm */ "typeorm");
 var location_entity_1 = __webpack_require__(/*! ./entities/location.entity */ "./apps/batches/src/dispatch/entities/location.entity.ts");
-var cardDispatch_1 = __webpack_require__(/*! ./entities/cardDispatch */ "./apps/batches/src/dispatch/entities/cardDispatch.ts");
+var cardDispatch_entity_1 = __webpack_require__(/*! ./entities/cardDispatch.entity */ "./apps/batches/src/dispatch/entities/cardDispatch.entity.ts");
+var card_repository_1 = __webpack_require__(/*! ../repository/card.repository */ "./apps/batches/src/repository/card.repository.ts");
+var entities_1 = __webpack_require__(/*! ../entities */ "./apps/batches/src/entities/index.ts");
+var typeorm_3 = __webpack_require__(/*! typeorm */ "typeorm");
 var DispatchService = /** @class */ (function () {
-    function DispatchService(dispatchRepository, cardDispatchRepository, cardLocationRepository) {
+    function DispatchService(dispatchRepository, cardDispatchRepository, cardRepository, cardLocationRepository, dataSource) {
         this.dispatchRepository = dispatchRepository;
         this.cardDispatchRepository = cardDispatchRepository;
+        this.cardRepository = cardRepository;
         this.cardLocationRepository = cardLocationRepository;
+        this.dataSource = dataSource;
     }
     DispatchService.prototype.getCardforDispatch = function (batchNo, lassraId, collectionCenter) {
         return __awaiter(this, void 0, void 0, function () {
-            var searchresult, searchresult;
+            var status, currentLocation, searchresult, searchresult;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
+                        status = 2;
+                        currentLocation = 'Head office';
                         if (!(batchNo > 0 && collectionCenter)) return [3 /*break*/, 2];
                         return [4 /*yield*/, this.cardLocationRepository
                                 .createQueryBuilder('cardLocation')
                                 .leftJoinAndSelect('cardLocation.card', 'card')
                                 .where('card.batchNo = :batchNo', { batchNo: batchNo })
+                                .andWhere('card.status = :status', { status: status })
+                                .andWhere('cardLocation.currentLocation = :currentLocation', {
+                                currentLocation: currentLocation,
+                            })
                                 .andWhere('cardLocation.collectionCenter = :collectionCenter', {
                                 collectionCenter: collectionCenter,
                             })
-                                .select(['cardLocation.lassraId', 'cardLocation..collectionCenter'])
+                                .select(['cardLocation.lassraId', 'cardLocation.collectionCenter'])
                                 .getMany()];
                     case 1:
                         searchresult = _a.sent();
                         return [2 /*return*/, searchresult];
                     case 2:
                         if (!lassraId) return [3 /*break*/, 4];
-                        return [4 /*yield*/, this.cardLocationRepository.find({ where: { lassraId: lassraId } })];
+                        return [4 /*yield*/, this.cardLocationRepository.find({
+                                where: { lassraId: lassraId, currentLocation: currentLocation },
+                                select: ['lassraId', 'collectionCenter'],
+                            })];
                     case 3: return [2 /*return*/, _a.sent()];
                     case 4:
-                        if (!(!batchNo && collectionCenter)) return [3 /*break*/, 6];
+                        if (!(batchNo < 1 && collectionCenter)) return [3 /*break*/, 6];
                         return [4 /*yield*/, this.cardLocationRepository
                                 .createQueryBuilder('cardLocation')
                                 .leftJoinAndSelect('cardLocation.card', 'card')
-                                // .where('card.batchNo = :batchNo', { batchNo })
-                                .where('cardLocation.collectionCenter = :collectionCenter', {
+                                .where('card.status= :status', { status: status })
+                                .andWhere('cardLocation.collectionCenter = :collectionCenter', {
                                 collectionCenter: collectionCenter,
                             })
-                                .select(['cardLocation.lassraId', 'cardLocation..collectionCenter'])
+                                .andWhere('cardLocation.currentLocation= :currentLocation', {
+                                currentLocation: currentLocation,
+                            })
+                                .select(['cardLocation.lassraId', 'cardLocation.collectionCenter'])
                                 .getMany()];
                     case 5:
                         searchresult = _a.sent();
@@ -1965,16 +2073,27 @@ var DispatchService = /** @class */ (function () {
             });
         });
     };
+    //Gett all cards
     DispatchService.prototype.createDispatch = function (createDispatchDto) {
         return __awaiter(this, void 0, void 0, function () {
-            var newDispatch;
+            var cardData, DispData, newDispatch, e_1;
             return __generator(this, function (_a) {
                 switch (_a.label) {
-                    case 0: return [4 /*yield*/, this.dispatchRepository.create(createDispatchDto)];
+                    case 0:
+                        cardData = createDispatchDto.cardDispatch.map(function (item) { return (__assign(__assign({}, item), { dispatchStatus: 0 })); });
+                        DispData = __assign(__assign({}, createDispatchDto), { cardDispatch: cardData });
+                        _a.label = 1;
                     case 1:
+                        _a.trys.push([1, 4, , 5]);
+                        return [4 /*yield*/, this.dispatchRepository.create(DispData)];
+                    case 2:
                         newDispatch = _a.sent();
                         return [4 /*yield*/, this.dispatchRepository.save(newDispatch)];
-                    case 2: return [2 /*return*/, _a.sent()];
+                    case 3: return [2 /*return*/, _a.sent()];
+                    case 4:
+                        e_1 = _a.sent();
+                        throw new Error(e_1.message);
+                    case 5: return [2 /*return*/];
                 }
             });
         });
@@ -2001,7 +2120,9 @@ var DispatchService = /** @class */ (function () {
                     case 3:
                         if (!(_i < _a.length)) return [3 /*break*/, 7];
                         card = _a[_i];
-                        return [4 /*yield*/, this.cardDispatchRepository.find({ where: { lassraId: card.lassraId } })];
+                        return [4 /*yield*/, this.cardDispatchRepository.find({
+                                where: { lassraId: card.lassraId },
+                            })];
                     case 4:
                         updatedCard = _b.sent();
                         return [4 /*yield*/, this.cardDispatchRepository.save(updatedCard)];
@@ -2011,35 +2132,55 @@ var DispatchService = /** @class */ (function () {
                     case 6:
                         _i++;
                         return [3 /*break*/, 3];
-                    case 7:
-                        findAll();
-                        {
-                            return [2 /*return*/, "This action returns all dispatch"];
-                        }
-                        findOne(id, number);
-                        {
-                            return [2 /*return*/, "This action returns a #".concat(id, " dispatch")];
-                        }
-                        update(id, number, updateDispatchDto, update_dispatch_dto_1.UpdateDispatchDto);
-                        {
-                            return [2 /*return*/, "This action updates a #".concat(id, " dispatch")];
-                        }
-                        remove(id, number);
-                        {
-                            return [2 /*return*/, "This action removes a #".concat(id, " dispatch")];
-                        }
-                        return [2 /*return*/];
+                    case 7: return [2 /*return*/];
                 }
             });
         });
     };
-    var _a, _b, _c;
+    DispatchService.prototype.findAll = function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var e_2;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        console.log('rom findALL');
+                        _a.label = 1;
+                    case 1:
+                        _a.trys.push([1, 3, , 4]);
+                        return [4 /*yield*/, this.dispatchRepository.find({})];
+                    case 2: return [2 /*return*/, _a.sent()];
+                    case 3:
+                        e_2 = _a.sent();
+                        throw new Error(e_2);
+                    case 4: return [2 /*return*/];
+                }
+            });
+        });
+    };
+    DispatchService.prototype.findOne = function (id) {
+        return __awaiter(this, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, this.dispatchRepository.find({ where: { id: id } })];
+                    case 1: return [2 /*return*/, _a.sent()];
+                }
+            });
+        });
+    };
+    DispatchService.prototype.update = function (id, updateDispatchDto) {
+        return "This action updates a #".concat(id, " dispatch");
+    };
+    DispatchService.prototype.remove = function (id) {
+        return "This action removes a #".concat(id, " dispatch");
+    };
+    var _a, _b, _c, _d, _e;
     DispatchService = __decorate([
         (0, common_1.Injectable)(),
         __param(0, (0, typeorm_1.InjectRepository)(dispatch_entity_1.Dispatch)),
-        __param(1, (0, typeorm_1.InjectRepository)(cardDispatch_1.CardDispatch)),
-        __param(2, (0, typeorm_1.InjectRepository)(location_entity_1.CardLocation)),
-        __metadata("design:paramtypes", [typeof (_a = typeof typeorm_2.Repository !== "undefined" && typeorm_2.Repository) === "function" ? _a : Object, typeof (_b = typeof typeorm_2.Repository !== "undefined" && typeorm_2.Repository) === "function" ? _b : Object, typeof (_c = typeof typeorm_2.Repository !== "undefined" && typeorm_2.Repository) === "function" ? _c : Object])
+        __param(1, (0, typeorm_1.InjectRepository)(cardDispatch_entity_1.CardDispatch)),
+        __param(2, (0, typeorm_1.InjectRepository)(entities_1.Card)),
+        __param(3, (0, typeorm_1.InjectRepository)(location_entity_1.CardLocation)),
+        __metadata("design:paramtypes", [typeof (_a = typeof typeorm_2.Repository !== "undefined" && typeorm_2.Repository) === "function" ? _a : Object, typeof (_b = typeof typeorm_2.Repository !== "undefined" && typeorm_2.Repository) === "function" ? _b : Object, typeof (_c = typeof card_repository_1.CardRepository !== "undefined" && card_repository_1.CardRepository) === "function" ? _c : Object, typeof (_d = typeof typeorm_2.Repository !== "undefined" && typeorm_2.Repository) === "function" ? _d : Object, typeof (_e = typeof typeorm_3.DataSource !== "undefined" && typeorm_3.DataSource) === "function" ? _e : Object])
     ], DispatchService);
     return DispatchService;
 }());
@@ -2080,13 +2221,12 @@ var CreateCardDispatchDto = /** @class */ (function () {
     ], CreateCardDispatchDto.prototype, "lassraId", void 0);
     __decorate([
         (0, class_validator_1.IsString)(),
-        (0, class_validator_1.IsNotEmpty)(),
         __metadata("design:type", String)
     ], CreateCardDispatchDto.prototype, "destination", void 0);
     __decorate([
-        (0, class_validator_1.IsString)(),
+        (0, class_validator_1.IsNumber)(),
         (0, class_validator_1.IsNotEmpty)(),
-        __metadata("design:type", String)
+        __metadata("design:type", Number)
     ], CreateCardDispatchDto.prototype, "dispatchStatus", void 0);
     __decorate([
         (0, class_validator_1.IsString)(),
@@ -2132,8 +2272,8 @@ var CreateDispatchDto = /** @class */ (function () {
         __metadata("design:type", String)
     ], CreateDispatchDto.prototype, "destination", void 0);
     __decorate([
-        (0, class_validator_1.IsString)(),
-        __metadata("design:type", String)
+        (0, class_validator_1.IsNumber)(),
+        __metadata("design:type", Number)
     ], CreateDispatchDto.prototype, "dispatchStatus", void 0);
     __decorate([
         (0, class_validator_1.IsString)(),
@@ -2160,7 +2300,6 @@ var CreateDispatchDto = /** @class */ (function () {
     ], CreateDispatchDto.prototype, "acknowledgedBy", void 0);
     __decorate([
         (0, class_validator_1.IsString)(),
-        (0, class_validator_1.IsNotEmpty)(),
         __metadata("design:type", String)
     ], CreateDispatchDto.prototype, "dispatcher", void 0);
     __decorate([
@@ -2213,10 +2352,10 @@ exports.UpdateDispatchDto = UpdateDispatchDto;
 
 /***/ }),
 
-/***/ "./apps/batches/src/dispatch/entities/cardDispatch.ts":
-/*!************************************************************!*\
-  !*** ./apps/batches/src/dispatch/entities/cardDispatch.ts ***!
-  \************************************************************/
+/***/ "./apps/batches/src/dispatch/entities/cardDispatch.entity.ts":
+/*!*******************************************************************!*\
+  !*** ./apps/batches/src/dispatch/entities/cardDispatch.entity.ts ***!
+  \*******************************************************************/
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
 
@@ -2246,17 +2385,20 @@ var CardDispatch = /** @class */ (function () {
         __metadata("design:type", String)
     ], CardDispatch.prototype, "lassraId", void 0);
     __decorate([
-        (0, typeorm_1.Column)(),
+        (0, typeorm_1.Column)({ nullable: true }),
         __metadata("design:type", String)
     ], CardDispatch.prototype, "destination", void 0);
     __decorate([
-        (0, typeorm_1.Column)(),
-        __metadata("design:type", String)
+        (0, typeorm_1.Column)({ nullable: true }),
+        __metadata("design:type", Number)
     ], CardDispatch.prototype, "dispatchStatus", void 0);
     __decorate([
         (0, typeorm_1.ManyToOne)(function () { return dispatch_entity_1.Dispatch; }),
         __metadata("design:type", typeof (_a = typeof dispatch_entity_1.Dispatch !== "undefined" && dispatch_entity_1.Dispatch) === "function" ? _a : Object)
     ], CardDispatch.prototype, "dispatch", void 0);
+    CardDispatch = __decorate([
+        (0, typeorm_1.Entity)()
+    ], CardDispatch);
     return CardDispatch;
 }());
 exports.CardDispatch = CardDispatch;
@@ -2283,9 +2425,11 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.Dispatch = void 0;
 var typeorm_1 = __webpack_require__(/*! typeorm */ "typeorm");
-var cardDispatch_1 = __webpack_require__(/*! ./cardDispatch */ "./apps/batches/src/dispatch/entities/cardDispatch.ts");
+var cardDispatch_entity_1 = __webpack_require__(/*! ./cardDispatch.entity */ "./apps/batches/src/dispatch/entities/cardDispatch.entity.ts");
 var Dispatch = /** @class */ (function () {
     function Dispatch() {
+        //
+        this.createdAt = new Date();
     }
     var _a, _b, _c;
     __decorate([
@@ -2297,39 +2441,42 @@ var Dispatch = /** @class */ (function () {
         __metadata("design:type", String)
     ], Dispatch.prototype, "destination", void 0);
     __decorate([
-        (0, typeorm_1.Column)(),
-        __metadata("design:type", String)
+        (0, typeorm_1.Column)({ default: 0 }),
+        __metadata("design:type", Number)
     ], Dispatch.prototype, "dispatchStatus", void 0);
     __decorate([
         (0, typeorm_1.Column)(),
         __metadata("design:type", String)
     ], Dispatch.prototype, "createdBy", void 0);
     __decorate([
-        (0, typeorm_1.Column)(),
+        (0, typeorm_1.Column)({ nullable: true }),
         __metadata("design:type", typeof (_a = typeof Date !== "undefined" && Date) === "function" ? _a : Object)
     ], Dispatch.prototype, "createdAt", void 0);
     __decorate([
-        (0, typeorm_1.Column)(),
+        (0, typeorm_1.Column)({ nullable: true }),
         __metadata("design:type", typeof (_b = typeof Date !== "undefined" && Date) === "function" ? _b : Object)
     ], Dispatch.prototype, "dispatchedAt", void 0);
     __decorate([
-        (0, typeorm_1.Column)(),
+        (0, typeorm_1.Column)({ nullable: true }),
         __metadata("design:type", typeof (_c = typeof Date !== "undefined" && Date) === "function" ? _c : Object)
     ], Dispatch.prototype, "acknowledgedAt", void 0);
     __decorate([
-        (0, typeorm_1.Column)(),
+        (0, typeorm_1.Column)({ nullable: true }),
         __metadata("design:type", String)
     ], Dispatch.prototype, "acknowledgedBy", void 0);
     __decorate([
-        (0, typeorm_1.Column)(),
+        (0, typeorm_1.Column)({}),
         __metadata("design:type", String)
     ], Dispatch.prototype, "dispatcher", void 0);
     __decorate([
-        (0, typeorm_1.ManyToMany)(function () { return cardDispatch_1.CardDispatch; }, function (cardDispatch) { return cardDispatch.dispatch; }, {
+        (0, typeorm_1.OneToMany)(function () { return cardDispatch_entity_1.CardDispatch; }, function (cardDispatch) { return cardDispatch.dispatch; }, {
             cascade: true,
         }),
         __metadata("design:type", Array)
     ], Dispatch.prototype, "cardDispatch", void 0);
+    Dispatch = __decorate([
+        (0, typeorm_1.Entity)()
+    ], Dispatch);
     return Dispatch;
 }());
 exports.Dispatch = Dispatch;
@@ -2356,9 +2503,11 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.CardLocation = void 0;
 var typeorm_1 = __webpack_require__(/*! typeorm */ "typeorm");
+var entities_1 = __webpack_require__(/*! ../../entities */ "./apps/batches/src/entities/index.ts");
 var CardLocation = /** @class */ (function () {
     function CardLocation() {
     }
+    var _a;
     __decorate([
         (0, typeorm_1.PrimaryGeneratedColumn)(),
         __metadata("design:type", Number)
@@ -2380,9 +2529,17 @@ var CardLocation = /** @class */ (function () {
         __metadata("design:type", String)
     ], CardLocation.prototype, "previousLocations", void 0);
     __decorate([
-        (0, typeorm_1.Column)(),
+        (0, typeorm_1.Column)({ unique: true }),
         __metadata("design:type", String)
     ], CardLocation.prototype, "lassraId", void 0);
+    __decorate([
+        (0, typeorm_1.OneToOne)(function () { return entities_1.Card; }),
+        (0, typeorm_1.JoinColumn)(),
+        __metadata("design:type", typeof (_a = typeof entities_1.Card !== "undefined" && entities_1.Card) === "function" ? _a : Object)
+    ], CardLocation.prototype, "card", void 0);
+    CardLocation = __decorate([
+        (0, typeorm_1.Entity)()
+    ], CardLocation);
     return CardLocation;
 }());
 exports.CardLocation = CardLocation;
@@ -3853,7 +4010,7 @@ exports.ProvisionModule = void 0;
 var common_1 = __webpack_require__(/*! @nestjs/common */ "@nestjs/common");
 var provision_service_1 = __webpack_require__(/*! ./provision.service */ "./apps/batches/src/provision/provision.service.ts");
 var provision_controller_1 = __webpack_require__(/*! ./provision.controller */ "./apps/batches/src/provision/provision.controller.ts");
-var common_2 = __webpack_require__(Object(function webpackMissingModule() { var e = new Error("Cannot find module '@app/common'"); e.code = 'MODULE_NOT_FOUND'; throw e; }()));
+var common_2 = __webpack_require__(/*! @app/common */ "./libs/common/src/index.ts");
 var typeorm_1 = __webpack_require__(/*! @nestjs/typeorm */ "@nestjs/typeorm");
 var entities_1 = __webpack_require__(/*! ../entities */ "./apps/batches/src/entities/index.ts");
 var provision_entity_1 = __webpack_require__(/*! ./entities/provision.entity */ "./apps/batches/src/provision/entities/provision.entity.ts");
@@ -4302,7 +4459,7 @@ exports.ReceiptModule = void 0;
 var common_1 = __webpack_require__(/*! @nestjs/common */ "@nestjs/common");
 var receipt_service_1 = __webpack_require__(/*! ./receipt.service */ "./apps/batches/src/receipt/receipt.service.ts");
 var receipt_controller_1 = __webpack_require__(/*! ./receipt.controller */ "./apps/batches/src/receipt/receipt.controller.ts");
-var common_2 = __webpack_require__(Object(function webpackMissingModule() { var e = new Error("Cannot find module '@app/common'"); e.code = 'MODULE_NOT_FOUND'; throw e; }()));
+var common_2 = __webpack_require__(/*! @app/common */ "./libs/common/src/index.ts");
 var typeorm_1 = __webpack_require__(/*! @nestjs/typeorm */ "@nestjs/typeorm");
 var cardreceipt_entity_1 = __webpack_require__(/*! ../entities/cardreceipt.entity */ "./apps/batches/src/entities/cardreceipt.entity.ts");
 var batch_service_1 = __webpack_require__(/*! ../batch/batch.service */ "./apps/batches/src/batch/batch.service.ts");
@@ -4766,6 +4923,309 @@ exports.ReceiptRepository = ReceiptRepository;
 
 /***/ }),
 
+/***/ "./libs/common/src/auth/index.ts":
+/*!***************************************!*\
+  !*** ./libs/common/src/auth/index.ts ***!
+  \***************************************/
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __exportStar = (this && this.__exportStar) || function(m, exports) {
+    for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+__exportStar(__webpack_require__(/*! ./jwt-auth.guard */ "./libs/common/src/auth/jwt-auth.guard.ts"), exports);
+
+
+/***/ }),
+
+/***/ "./libs/common/src/auth/jwt-auth.guard.ts":
+/*!************************************************!*\
+  !*** ./libs/common/src/auth/jwt-auth.guard.ts ***!
+  \************************************************/
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+var __param = (this && this.__param) || function (paramIndex, decorator) {
+    return function (target, key) { decorator(target, key, paramIndex); }
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.JwtAuthGuard = void 0;
+var common_1 = __webpack_require__(/*! @nestjs/common */ "@nestjs/common");
+var microservices_1 = __webpack_require__(/*! @nestjs/microservices */ "@nestjs/microservices");
+var JwtAuthGuard = /** @class */ (function () {
+    function JwtAuthGuard(authClient) {
+        this.authClient = authClient;
+    }
+    JwtAuthGuard.prototype.canActivate = function (context) {
+        var _a;
+        var jwt = (_a = context.switchToHttp().getRequest().cookies) === null || _a === void 0 ? void 0 : _a.Authentication;
+        if (!jwt) {
+            return false;
+        }
+    };
+    var _a;
+    JwtAuthGuard = __decorate([
+        (0, common_1.Injectable)(),
+        __param(0, (0, common_1.Inject)('AUTH_SERVICE')),
+        __metadata("design:paramtypes", [typeof (_a = typeof microservices_1.ClientProxy !== "undefined" && microservices_1.ClientProxy) === "function" ? _a : Object])
+    ], JwtAuthGuard);
+    return JwtAuthGuard;
+}());
+exports.JwtAuthGuard = JwtAuthGuard;
+
+
+/***/ }),
+
+/***/ "./libs/common/src/database/database.module.ts":
+/*!*****************************************************!*\
+  !*** ./libs/common/src/database/database.module.ts ***!
+  \*****************************************************/
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.DatabaseModule = void 0;
+var common_1 = __webpack_require__(/*! @nestjs/common */ "@nestjs/common");
+var typeorm_1 = __webpack_require__(/*! @nestjs/typeorm */ "@nestjs/typeorm");
+var typeorm_config_1 = __webpack_require__(/*! ../../../../typeorm.config */ "./typeorm.config.ts");
+// import { Batch } from 'apps/batches/src/entities/batch.entity';
+// import { Card } from 'apps/batches/src/produced/entities/produced.entity';
+// import { ModelDefinition, MongooseModule } from '@nestjs/mongoose';
+var DatabaseModule = /** @class */ (function () {
+    function DatabaseModule() {
+    }
+    DatabaseModule = __decorate([
+        (0, common_1.Module)({
+            imports: [
+                typeorm_1.TypeOrmModule.forRoot(typeorm_config_1.dataSourceOptions),
+                // TypeOrmModule.forRootAsync({
+                //   useFactory: (configService: ConfigService) => ({
+                //     type: 'postgres',
+                //     host: configService.get('POSTGRES_HOST'), //'localhost' || 'postgres', // You can use environment variables if needed
+                //     port: configService.get('POSTGRES_PORT'),
+                //     username: configService.get('POSTGRES_USER'),
+                //     password: configService.get('POSTGRES_PASSWORD'),
+                //     database: configService.get('POSTGRES_DATABASE'),
+                //     entities: [__dirname + '/../**/*.entity{.ts,.js}'],
+                //     // migrations: ['/../**/migrations/*.js'],
+                //     // cli: {
+                //     //   migrationsDir: '/libs/commom/src/database/migrations',
+                //     // },
+                //     // migrations: ['dist/batches/migrations/*.js'],
+                //     // migrationsTableName: 'task_migrations',
+                //     autoLoadEntities: true,
+                //     // synchronize: true,
+                //     logging: true,
+                //   }),
+                //   inject: [ConfigService],
+                // }),
+            ],
+        })
+    ], DatabaseModule);
+    return DatabaseModule;
+}());
+exports.DatabaseModule = DatabaseModule;
+
+
+/***/ }),
+
+/***/ "./libs/common/src/database/index.ts":
+/*!*******************************************!*\
+  !*** ./libs/common/src/database/index.ts ***!
+  \*******************************************/
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __exportStar = (this && this.__exportStar) || function(m, exports) {
+    for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+__exportStar(__webpack_require__(/*! ./database.module */ "./libs/common/src/database/database.module.ts"), exports);
+// export * from './abstract.repository';
+// export * from './abstract.schema';
+
+
+/***/ }),
+
+/***/ "./libs/common/src/index.ts":
+/*!**********************************!*\
+  !*** ./libs/common/src/index.ts ***!
+  \**********************************/
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __exportStar = (this && this.__exportStar) || function(m, exports) {
+    for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+__exportStar(__webpack_require__(/*! ./database */ "./libs/common/src/database/index.ts"), exports);
+__exportStar(__webpack_require__(/*! ./logger */ "./libs/common/src/logger/index.ts"), exports);
+__exportStar(__webpack_require__(/*! ./auth */ "./libs/common/src/auth/index.ts"), exports);
+
+
+/***/ }),
+
+/***/ "./libs/common/src/logger/index.ts":
+/*!*****************************************!*\
+  !*** ./libs/common/src/logger/index.ts ***!
+  \*****************************************/
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __exportStar = (this && this.__exportStar) || function(m, exports) {
+    for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+__exportStar(__webpack_require__(/*! ./logger.module */ "./libs/common/src/logger/logger.module.ts"), exports);
+
+
+/***/ }),
+
+/***/ "./libs/common/src/logger/logger.module.ts":
+/*!*************************************************!*\
+  !*** ./libs/common/src/logger/logger.module.ts ***!
+  \*************************************************/
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.LoggerModule = void 0;
+var common_1 = __webpack_require__(/*! @nestjs/common */ "@nestjs/common");
+var nestjs_pino_1 = __webpack_require__(/*! nestjs-pino */ "nestjs-pino");
+var LoggerModule = /** @class */ (function () {
+    function LoggerModule() {
+    }
+    LoggerModule = __decorate([
+        (0, common_1.Module)({
+            imports: [
+                nestjs_pino_1.LoggerModule.forRoot({
+                    pinoHttp: {
+                        transport: {
+                            target: 'pino-pretty',
+                            options: {
+                                singleLine: true,
+                            },
+                        },
+                    },
+                }),
+            ],
+        })
+    ], LoggerModule);
+    return LoggerModule;
+}());
+exports.LoggerModule = LoggerModule;
+
+
+/***/ }),
+
+/***/ "./typeorm.config.ts":
+/*!***************************!*\
+  !*** ./typeorm.config.ts ***!
+  \***************************/
+/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
+
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.dataSourceOptions = void 0;
+var dotenv_1 = __webpack_require__(/*! dotenv */ "dotenv");
+var config_1 = __webpack_require__(/*! @nestjs/config */ "@nestjs/config");
+var typeorm_1 = __webpack_require__(/*! typeorm */ "typeorm");
+(0, dotenv_1.config)();
+var configService = new config_1.ConfigService();
+exports.dataSourceOptions = {
+    type: 'postgres',
+    host: configService.getOrThrow('POSTGRES_HOST'),
+    port: configService.getOrThrow('POSTGRES_PORT'),
+    database: configService.getOrThrow('POSTGRES_DATABASE'),
+    username: configService.getOrThrow('POSTGRES_USER'),
+    password: configService.getOrThrow('POSTGRES_PASSWORD'),
+    entities: [__dirname + '/../**/*.entity{.ts,.js}'],
+    migrations: ['migrations/**'],
+};
+//   type: 'postgres',
+//   host: 'localhost', //configService.get('POSTGRES_HOST'), //'localhost' || 'postgres', // You can use environment variables if needed
+//   port: 5432, //configService.get('POSTGRES_PORT'),
+//   username: 'card_tracker', // configService.get('POSTGRES_USER'),
+//   password: 'card_tracker', //configService.get('POSTGRES_PASSWORD'),
+//   database: 'card_tracker', // configService.get('POSTGRES_DATABASE'),
+//   entities: [__dirname + '/../**/*.entity{.ts,.js}'],
+//   //   migrations: ['/../**/migrations/*.js'],
+//   // cli: {
+//   //   migrationsDir: '/libs/commom/src/database/migrations',
+//   // },
+//   migrations: ['db/migrations/*{.js,.ts}'],
+//   // migrationsTableName: 'task_migrations',
+// //   autoLoadEntities: true,
+// //   synchronize: false,
+//   logging: true,
+// };
+var dataSource = new typeorm_1.DataSource(exports.dataSourceOptions);
+exports["default"] = dataSource;
+// const dataSource = new DataSource({
+//   type: 'postgres',
+//   host: configService.getOrThrow('POSTGRES_HOST'),
+//   port: configService.getOrThrow('POSTGRES_PORT'),
+//   database: configService.getOrThrow('POSTGRES_DATABASE'),
+//   username: configService.getOrThrow('POSTGRES_USER'),
+//   password: configService.getOrThrow('POSTGRES_PASSWORD'),
+//   entities: [__dirname + '/../**/*.entity{.ts,.js}'],
+//   migrations: ['migrations/**'],
+// });
+// export default dataSource;
+
+
+/***/ }),
+
 /***/ "@nestjs/common":
 /*!*********************************!*\
   !*** external "@nestjs/common" ***!
@@ -4816,6 +5276,16 @@ module.exports = require("@nestjs/mapped-types");
 
 /***/ }),
 
+/***/ "@nestjs/microservices":
+/*!****************************************!*\
+  !*** external "@nestjs/microservices" ***!
+  \****************************************/
+/***/ ((module) => {
+
+module.exports = require("@nestjs/microservices");
+
+/***/ }),
+
 /***/ "@nestjs/swagger":
 /*!**********************************!*\
   !*** external "@nestjs/swagger" ***!
@@ -4863,6 +5333,16 @@ module.exports = require("class-transformer");
 /***/ ((module) => {
 
 module.exports = require("class-validator");
+
+/***/ }),
+
+/***/ "dotenv":
+/*!*************************!*\
+  !*** external "dotenv" ***!
+  \*************************/
+/***/ ((module) => {
+
+module.exports = require("dotenv");
 
 /***/ }),
 

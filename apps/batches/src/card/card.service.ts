@@ -53,7 +53,7 @@ export class CardService {
     try {
       const queryBuilder = await this.cardRepository.createQueryBuilder('card');
       queryBuilder
-        .where('card.batchNo =:batchNo', { batchNo })
+        // .where('card.batchNo =:batchNo', { batchNo })
         .andWhere('card.lassraId =:lassraId', { lassraId });
       console.log(queryBuilder, 'QueryBuilder');
       return queryBuilder.getOne();

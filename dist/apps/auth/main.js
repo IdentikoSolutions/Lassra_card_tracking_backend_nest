@@ -216,7 +216,7 @@ var Joi = __webpack_require__(/*! joi */ "joi");
 var config_1 = __webpack_require__(/*! @nestjs/config */ "@nestjs/config");
 var local_strategy_1 = __webpack_require__(/*! ../strategies/local.strategy */ "./apps/auth/strategies/local.strategy.ts");
 var jwt_strategy_1 = __webpack_require__(/*! ../strategies/jwt.strategy */ "./apps/auth/strategies/jwt.strategy.ts");
-var common_2 = __webpack_require__(Object(function webpackMissingModule() { var e = new Error("Cannot find module '@app/common'"); e.code = 'MODULE_NOT_FOUND'; throw e; }()));
+var common_2 = __webpack_require__(/*! @app/common */ "./libs/common/src/index.ts");
 var AuthModule = /** @class */ (function () {
     function AuthModule() {
     }
@@ -919,6 +919,309 @@ exports.LocalStrategy = LocalStrategy;
 
 /***/ }),
 
+/***/ "./libs/common/src/auth/index.ts":
+/*!***************************************!*\
+  !*** ./libs/common/src/auth/index.ts ***!
+  \***************************************/
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __exportStar = (this && this.__exportStar) || function(m, exports) {
+    for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+__exportStar(__webpack_require__(/*! ./jwt-auth.guard */ "./libs/common/src/auth/jwt-auth.guard.ts"), exports);
+
+
+/***/ }),
+
+/***/ "./libs/common/src/auth/jwt-auth.guard.ts":
+/*!************************************************!*\
+  !*** ./libs/common/src/auth/jwt-auth.guard.ts ***!
+  \************************************************/
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+var __param = (this && this.__param) || function (paramIndex, decorator) {
+    return function (target, key) { decorator(target, key, paramIndex); }
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.JwtAuthGuard = void 0;
+var common_1 = __webpack_require__(/*! @nestjs/common */ "@nestjs/common");
+var microservices_1 = __webpack_require__(/*! @nestjs/microservices */ "@nestjs/microservices");
+var JwtAuthGuard = /** @class */ (function () {
+    function JwtAuthGuard(authClient) {
+        this.authClient = authClient;
+    }
+    JwtAuthGuard.prototype.canActivate = function (context) {
+        var _a;
+        var jwt = (_a = context.switchToHttp().getRequest().cookies) === null || _a === void 0 ? void 0 : _a.Authentication;
+        if (!jwt) {
+            return false;
+        }
+    };
+    var _a;
+    JwtAuthGuard = __decorate([
+        (0, common_1.Injectable)(),
+        __param(0, (0, common_1.Inject)('AUTH_SERVICE')),
+        __metadata("design:paramtypes", [typeof (_a = typeof microservices_1.ClientProxy !== "undefined" && microservices_1.ClientProxy) === "function" ? _a : Object])
+    ], JwtAuthGuard);
+    return JwtAuthGuard;
+}());
+exports.JwtAuthGuard = JwtAuthGuard;
+
+
+/***/ }),
+
+/***/ "./libs/common/src/database/database.module.ts":
+/*!*****************************************************!*\
+  !*** ./libs/common/src/database/database.module.ts ***!
+  \*****************************************************/
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.DatabaseModule = void 0;
+var common_1 = __webpack_require__(/*! @nestjs/common */ "@nestjs/common");
+var typeorm_1 = __webpack_require__(/*! @nestjs/typeorm */ "@nestjs/typeorm");
+var typeorm_config_1 = __webpack_require__(/*! ../../../../typeorm.config */ "./typeorm.config.ts");
+// import { Batch } from 'apps/batches/src/entities/batch.entity';
+// import { Card } from 'apps/batches/src/produced/entities/produced.entity';
+// import { ModelDefinition, MongooseModule } from '@nestjs/mongoose';
+var DatabaseModule = /** @class */ (function () {
+    function DatabaseModule() {
+    }
+    DatabaseModule = __decorate([
+        (0, common_1.Module)({
+            imports: [
+                typeorm_1.TypeOrmModule.forRoot(typeorm_config_1.dataSourceOptions),
+                // TypeOrmModule.forRootAsync({
+                //   useFactory: (configService: ConfigService) => ({
+                //     type: 'postgres',
+                //     host: configService.get('POSTGRES_HOST'), //'localhost' || 'postgres', // You can use environment variables if needed
+                //     port: configService.get('POSTGRES_PORT'),
+                //     username: configService.get('POSTGRES_USER'),
+                //     password: configService.get('POSTGRES_PASSWORD'),
+                //     database: configService.get('POSTGRES_DATABASE'),
+                //     entities: [__dirname + '/../**/*.entity{.ts,.js}'],
+                //     // migrations: ['/../**/migrations/*.js'],
+                //     // cli: {
+                //     //   migrationsDir: '/libs/commom/src/database/migrations',
+                //     // },
+                //     // migrations: ['dist/batches/migrations/*.js'],
+                //     // migrationsTableName: 'task_migrations',
+                //     autoLoadEntities: true,
+                //     // synchronize: true,
+                //     logging: true,
+                //   }),
+                //   inject: [ConfigService],
+                // }),
+            ],
+        })
+    ], DatabaseModule);
+    return DatabaseModule;
+}());
+exports.DatabaseModule = DatabaseModule;
+
+
+/***/ }),
+
+/***/ "./libs/common/src/database/index.ts":
+/*!*******************************************!*\
+  !*** ./libs/common/src/database/index.ts ***!
+  \*******************************************/
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __exportStar = (this && this.__exportStar) || function(m, exports) {
+    for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+__exportStar(__webpack_require__(/*! ./database.module */ "./libs/common/src/database/database.module.ts"), exports);
+// export * from './abstract.repository';
+// export * from './abstract.schema';
+
+
+/***/ }),
+
+/***/ "./libs/common/src/index.ts":
+/*!**********************************!*\
+  !*** ./libs/common/src/index.ts ***!
+  \**********************************/
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __exportStar = (this && this.__exportStar) || function(m, exports) {
+    for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+__exportStar(__webpack_require__(/*! ./database */ "./libs/common/src/database/index.ts"), exports);
+__exportStar(__webpack_require__(/*! ./logger */ "./libs/common/src/logger/index.ts"), exports);
+__exportStar(__webpack_require__(/*! ./auth */ "./libs/common/src/auth/index.ts"), exports);
+
+
+/***/ }),
+
+/***/ "./libs/common/src/logger/index.ts":
+/*!*****************************************!*\
+  !*** ./libs/common/src/logger/index.ts ***!
+  \*****************************************/
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __exportStar = (this && this.__exportStar) || function(m, exports) {
+    for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+__exportStar(__webpack_require__(/*! ./logger.module */ "./libs/common/src/logger/logger.module.ts"), exports);
+
+
+/***/ }),
+
+/***/ "./libs/common/src/logger/logger.module.ts":
+/*!*************************************************!*\
+  !*** ./libs/common/src/logger/logger.module.ts ***!
+  \*************************************************/
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.LoggerModule = void 0;
+var common_1 = __webpack_require__(/*! @nestjs/common */ "@nestjs/common");
+var nestjs_pino_1 = __webpack_require__(/*! nestjs-pino */ "nestjs-pino");
+var LoggerModule = /** @class */ (function () {
+    function LoggerModule() {
+    }
+    LoggerModule = __decorate([
+        (0, common_1.Module)({
+            imports: [
+                nestjs_pino_1.LoggerModule.forRoot({
+                    pinoHttp: {
+                        transport: {
+                            target: 'pino-pretty',
+                            options: {
+                                singleLine: true,
+                            },
+                        },
+                    },
+                }),
+            ],
+        })
+    ], LoggerModule);
+    return LoggerModule;
+}());
+exports.LoggerModule = LoggerModule;
+
+
+/***/ }),
+
+/***/ "./typeorm.config.ts":
+/*!***************************!*\
+  !*** ./typeorm.config.ts ***!
+  \***************************/
+/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
+
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.dataSourceOptions = void 0;
+var dotenv_1 = __webpack_require__(/*! dotenv */ "dotenv");
+var config_1 = __webpack_require__(/*! @nestjs/config */ "@nestjs/config");
+var typeorm_1 = __webpack_require__(/*! typeorm */ "typeorm");
+(0, dotenv_1.config)();
+var configService = new config_1.ConfigService();
+exports.dataSourceOptions = {
+    type: 'postgres',
+    host: configService.getOrThrow('POSTGRES_HOST'),
+    port: configService.getOrThrow('POSTGRES_PORT'),
+    database: configService.getOrThrow('POSTGRES_DATABASE'),
+    username: configService.getOrThrow('POSTGRES_USER'),
+    password: configService.getOrThrow('POSTGRES_PASSWORD'),
+    entities: [__dirname + '/../**/*.entity{.ts,.js}'],
+    migrations: ['migrations/**'],
+};
+//   type: 'postgres',
+//   host: 'localhost', //configService.get('POSTGRES_HOST'), //'localhost' || 'postgres', // You can use environment variables if needed
+//   port: 5432, //configService.get('POSTGRES_PORT'),
+//   username: 'card_tracker', // configService.get('POSTGRES_USER'),
+//   password: 'card_tracker', //configService.get('POSTGRES_PASSWORD'),
+//   database: 'card_tracker', // configService.get('POSTGRES_DATABASE'),
+//   entities: [__dirname + '/../**/*.entity{.ts,.js}'],
+//   //   migrations: ['/../**/migrations/*.js'],
+//   // cli: {
+//   //   migrationsDir: '/libs/commom/src/database/migrations',
+//   // },
+//   migrations: ['db/migrations/*{.js,.ts}'],
+//   // migrationsTableName: 'task_migrations',
+// //   autoLoadEntities: true,
+// //   synchronize: false,
+//   logging: true,
+// };
+var dataSource = new typeorm_1.DataSource(exports.dataSourceOptions);
+exports["default"] = dataSource;
+// const dataSource = new DataSource({
+//   type: 'postgres',
+//   host: configService.getOrThrow('POSTGRES_HOST'),
+//   port: configService.getOrThrow('POSTGRES_PORT'),
+//   database: configService.getOrThrow('POSTGRES_DATABASE'),
+//   username: configService.getOrThrow('POSTGRES_USER'),
+//   password: configService.getOrThrow('POSTGRES_PASSWORD'),
+//   entities: [__dirname + '/../**/*.entity{.ts,.js}'],
+//   migrations: ['migrations/**'],
+// });
+// export default dataSource;
+
+
+/***/ }),
+
 /***/ "@nestjs/common":
 /*!*********************************!*\
   !*** external "@nestjs/common" ***!
@@ -1006,6 +1309,16 @@ module.exports = require("bcryptjs");
 /***/ ((module) => {
 
 module.exports = require("cookie-parser");
+
+/***/ }),
+
+/***/ "dotenv":
+/*!*************************!*\
+  !*** external "dotenv" ***!
+  \*************************/
+/***/ ((module) => {
+
+module.exports = require("dotenv");
 
 /***/ }),
 

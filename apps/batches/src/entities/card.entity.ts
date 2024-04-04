@@ -1,4 +1,10 @@
-import { Column, Entity, ManyToOne, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  ManyToOne,
+  OneToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 import { Batch } from './batch.entity';
 import { CardReceipt } from './cardreceipt.entity';
 import { CardLocation } from '../dispatch/entities/location.entity';

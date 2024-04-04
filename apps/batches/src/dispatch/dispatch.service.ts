@@ -5,8 +5,11 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Dispatch } from './entities/dispatch.entity';
 import { Repository } from 'typeorm';
 import { CardLocation } from './entities/location.entity';
-import { CardDispatch } from './entities/cardDispatch';
+import { CardDispatch } from './entities/cardDispatch.entity';
 import { AppController } from '../app.controller';
+import { CardRepository } from '../repository/card.repository';
+import { Card } from '../entities';
+import { DataSource } from 'typeorm';
 
 @Injectable()
 export class DispatchService {
@@ -15,69 +18,71 @@ export class DispatchService {
     private readonly dispatchRepository: Repository<Dispatch>,
     @InjectRepository(CardDispatch)
     private readonly cardDispatchRepository: Repository<CardDispatch>,
+    @InjectRepository(Card)
+    private readonly cardRepository: CardRepository,
     @InjectRepository(CardLocation)
     private readonly cardLocationRepository: Repository<CardLocation>,
+    private readonly dataSource: DataSource,
   ) {}
   async getCardforDispatch(
     batchNo: number,
     lassraId: string,
     collectionCenter: string,
   ) {
+    const status = 2;
+    const currentLocation = 'Head office';
     if (batchNo > 0 && collectionCenter) {
       const searchresult = await this.cardLocationRepository
         .createQueryBuilder('cardLocation')
         .leftJoinAndSelect('cardLocation.card', 'card')
         .where('card.batchNo = :batchNo', { batchNo })
+        .andWhere('card.status = :status', { status })
+        .andWhere('cardLocation.currentLocation = :currentLocation', {
+          currentLocation,
+        })
         .andWhere('cardLocation.collectionCenter = :collectionCenter', {
           collectionCenter,
         })
-        .select(['cardLocation.lassraId', 'cardLocation..collectionCenter'])
+        .select(['cardLocation.lassraId', 'cardLocation.collectionCenter'])
         .getMany();
       return searchresult;
     } else if (lassraId) {
-      return await this.cardLocationRepository.find({ where: { lassraId } });
-    } else if (!batchNo && collectionCenter) {
+      return await this.cardLocationRepository.find({
+        where: { lassraId, currentLocation },
+        select: ['lassraId', 'collectionCenter'],
+      });
+    } else if (batchNo < 1 && collectionCenter) {
       const searchresult = await this.cardLocationRepository
         .createQueryBuilder('cardLocation')
         .leftJoinAndSelect('cardLocation.card', 'card')
-        // .where('card.batchNo = :batchNo', { batchNo })
-        .where('cardLocation.collectionCenter = :collectionCenter', {
+        .where('card.status= :status', { status })
+        .andWhere('cardLocation.collectionCenter = :collectionCenter', {
           collectionCenter,
         })
-        .select(['cardLocation.lassraId', 'cardLocation..collectionCenter'])
+        .andWhere('cardLocation.currentLocation= :currentLocation', {
+          currentLocation,
+        })
+        .select(['cardLocation.lassraId', 'cardLocation.collectionCenter'])
         .getMany();
       return searchresult;
     }
-    //   const provision = await this.provisionRepository
-    //   .createQueryBuilder('provision')
-    //   .leftJoinAndSelect('provision.batch', 'batch')
-    //   .leftJoinAndSelect('provision.cardProvision', 'cardProvision')
-    //   .where('provision.batchNo = :batchNo', { batchNo })
-    //   .orWhere('batch.bankJobNo LIKE :jobNo', { jobNo: `%${jobNo}%` })
-    //   .orWhere('cardProvision.lassraId = :lassraId', {
-    //     lassraId,
-    //   })
-    //   .select([
-    //     'provision.provisionedBy',
-    //     'provision.provisionedAt',
-    //     'provision.batchNo',
-    //     'provision.id',
-    //     'provision.createdAt',
-    //     'provision.cardProvision',
-    //     // 'COUNT(cardReceipt) AS cardCount',
-    //   ])
-    //   .orderBy('provision.id', 'ASC') // Order by id in ascending order
-    //   .addGroupBy('provision.id') // Group by receipt id
-    //   .skip((page - 1) * pageSize)
-    //   .take(pageSize)
-    //   .getManyAndCount();
-
-    // return provision;
   }
+  //Gett all cards
   async createDispatch(createDispatchDto: CreateDispatchDto) {
-    const newDispatch = await this.dispatchRepository.create(createDispatchDto);
-    return await this.dispatchRepository.save(newDispatch);
+    const cardData = createDispatchDto.cardDispatch.map((item) => ({
+      ...item,
+      dispatchStatus: 0,
+    }));
+
+    const DispData = { ...createDispatchDto, cardDispatch: cardData };
+    try {
+      const newDispatch = await this.dispatchRepository.create(DispData);
+      return await this.dispatchRepository.save(newDispatch);
+    } catch (e) {
+      throw new Error(e.message);
+    }
   }
+
   async updateDispatch(updateDispatchDto: UpdateDispatchDto, id: number) {
     const dispatchToUpdate = await this.dispatchRepository.find({
       where: { id: id },
@@ -92,16 +97,24 @@ export class DispatchService {
     };
     await this.dispatchRepository.save(updatedDispatch);
     for (const card of updateDispatchDto.cardDispatch) {
-     const updatedCard =  await this.cardDispatchRepository.find({where:{lassraId:card.lassraId}})
-     await this.cardDispatchRepository.save(updatedCard);
-     //this schould be done in transaction
+      const updatedCard = await this.cardDispatchRepository.find({
+        where: { lassraId: card.lassraId },
+      });
+      await this.cardDispatchRepository.save(updatedCard);
+      //this schould be done in transaction
+    }
   }
-  findAll() {
-    return `This action returns all dispatch`;
+  async findAll() {
+    console.log('rom findALL');
+    try {
+      return await this.dispatchRepository.find({});
+    } catch (e) {
+      throw new Error(e);
+    }
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} dispatch`;
+  async findOne(id: number) {
+    return await this.dispatchRepository.find({ where: { id } });
   }
 
   update(id: number, updateDispatchDto: UpdateDispatchDto) {

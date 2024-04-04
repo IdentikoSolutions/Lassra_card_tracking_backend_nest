@@ -1,7 +1,7 @@
 import { Module, forwardRef } from '@nestjs/common';
 import { AppService } from './app.service';
 import { AppController } from './app.controller';
-import { DatabaseModule, LoggerModule } from '@app/common';
+import { LoggerModule } from '@app/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Batch, Receipt, Card, CardReceipt } from './entities';
 import { ConfigModule, ConfigService } from '@nestjs/config';
@@ -17,12 +17,6 @@ import { DispatchModule } from './dispatch/dispatch.module';
 
 @Module({
   imports: [
-    // DatabaseModule,
-    // CorsModule.forRoot({
-    //   origin: '*',
-    //   methods: ['GET', 'POST', 'PUT', 'DELETE'],
-    //   allowedHeaders: ['Content-Type', 'Authorization'],
-    // }),
     DevtoolsModule.register({
       http: process.env.NODE_ENV !== 'production',
     }),
@@ -46,16 +40,6 @@ import { DispatchModule } from './dispatch/dispatch.module';
       }),
       inject: [ConfigService],
     }),
-    // TypeOrmModule.forRoot({
-    //   type: 'postgres',
-    //   host: 'localhost',
-    //   port: 5432,
-    //   username: 'card_tracker',
-    //   password: 'card_tracker',
-    //   database: 'card_tracker',
-    //   entities: [__dirname + '/**/*.entity{.ts,.js}'],
-    //   synchronize: true, // In development, set to true; in production, set to false
-    // }),
     TypeOrmModule.forFeature([Batch, Card, Receipt, CardReceipt]),
     BatchModule,
     ReceiptModule,
