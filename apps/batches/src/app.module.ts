@@ -14,6 +14,7 @@ import { DevtoolsModule } from '@nestjs/devtools-integration';
 import { ProvisionModule } from './provision/provision.module';
 import { CardprovisionModule } from './cardprovision/cardprovision.module';
 import { DispatchModule } from './dispatch/dispatch.module';
+import { RetrivalModule } from './retrival/retrival.module';
 
 @Module({
   imports: [
@@ -48,6 +49,7 @@ import { DispatchModule } from './dispatch/dispatch.module';
     ProvisionModule,
     CardprovisionModule,
     DispatchModule,
+    RetrivalModule,
   ],
   controllers: [AppController],
   providers: [AppService, ConfigService],

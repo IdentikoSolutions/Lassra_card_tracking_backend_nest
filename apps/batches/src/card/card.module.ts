@@ -7,11 +7,12 @@ import { Batch } from '../entities/batch.entity';
 import { Card } from '../entities/card.entity';
 import { CardReceipt } from '../entities/cardreceipt.entity';
 import { Receipt } from '../entities/receipt.entity';
+import { CardLocation } from '../dispatch/entities/location.entity';
 
 @Module({
   imports: [
     DatabaseModule,
-    TypeOrmModule.forFeature([Batch, Card, Receipt, CardReceipt]),
+    TypeOrmModule.forFeature([Batch, Card, Receipt, CardReceipt, CardLocation]),
   ],
   controllers: [CardController],
   providers: [CardService],

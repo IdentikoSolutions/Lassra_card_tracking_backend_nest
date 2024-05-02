@@ -67,7 +67,7 @@ export class ReceiptService {
     try {
       const receipts = await this.receiptRepository.find({
         where: { id: +id },
-        relations: ['batch'],
+        relations: ['card','cardReceipt'],
       });
       return receipts[0];
     } catch (e) {

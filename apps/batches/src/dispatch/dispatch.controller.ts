@@ -18,6 +18,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CardLocation } from './entities/location.entity';
 import { Card } from '../entities';
+import { ExceptionsHandler } from '@nestjs/core/exceptions/exceptions-handler';
 
 @Controller('dispatch')
 export class DispatchController {
@@ -83,19 +84,36 @@ export class DispatchController {
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.dispatchService.findOne(+id);
+    try {
+      return this.dispatchService.findOne(+id);
+    } catch (e) {
+      throw new HttpException(e.message, HttpStatus.EXPECTATION_FAILED);
+    }
+  }
+  @Get('onecarddispatch')
+  async findOneCard(
+    @Query('id') id: string,
+    @Query('lassraId') lassraId: string,
+  ) {
+    console.log(id);
+    return await this.dispatchService.findOneCardDispatch(+id, lassraId);
   }
 
   @Patch(':id')
   update(
     @Param('id') id: string,
-    @Body() updateDispatchDto: UpdateDispatchDto,
+    @Body() updateDispatchDto: Partial<CreateDispatchDto>,
   ) {
-    return this.dispatchService.update(+id, updateDispatchDto);
+    try {
+      return this.dispatchService.ackDispatch(updateDispatchDto, +id);
+      // return this.dispatchService.updateDispatch(updateDispatchDto, +id);
+    } catch (e) {
+      throw new Error(e);
+    }
   }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.dispatchService.remove(+id);
+    // return this.dispatchService.remove(+id);
   }
 }

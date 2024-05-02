@@ -17,6 +17,8 @@ export class CardLocation {
   collectionCenter: string;
   @Column()
   requestedDelivery: boolean;
+  @Column({ default: false })
+  requestedRelocation: boolean;
   @Column()
   previousLocations: string;
   @Column({ unique: true })

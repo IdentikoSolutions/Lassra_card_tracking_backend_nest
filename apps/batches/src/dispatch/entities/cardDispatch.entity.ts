@@ -13,5 +13,6 @@ export class CardDispatch {
   dispatchStatus: number; //0 is initial,1 is out for dispatch,2 is dispatched
 
   @ManyToOne(() => Dispatch)
+  // @Column({ foreignKey: true, name: "dispatchId" })
   dispatch: Dispatch;
 }

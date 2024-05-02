@@ -4,15 +4,19 @@ import { UpdateCardDto } from '../dto/update-card.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Card } from '../entities';
 import { CardRepository } from '../repository';
+import { CardLocation } from '../dispatch/entities/location.entity';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class CardService {
   constructor(
     @InjectRepository(Card) private readonly cardRepository: CardRepository,
+    @InjectRepository(CardLocation)
+    private readonly cardLocationRepository: Repository<CardLocation>,
   ) {}
-  create(createCardDto: CreateCardDto) {
-    return 'This action adds a new card';
-  }
+  // create(createCardDto: CreateCardDto) {
+  //   return 'This action adds a new card';
+  // }
   //get all the card or get all cards for a batch when you supply batchNo as queryParam
   async findAll(batchNo: string) {
     try {
@@ -29,6 +33,23 @@ export class CardService {
       throw new Error(e);
     }
   }
+  async getCardForRetrivalByCollectionCenter(currentLocation: string) {
+    console.log('selecting requests');
+    //this will get card that requested relocation and/or home delivery by collectionCenter
+    const queryBuilder = await this.cardLocationRepository.createQueryBuilder(
+      'cardLocation',
+    );
+    queryBuilder
+      .leftJoinAndSelect('cardLocation.card', 'card')
+      .where('cardLocation.currentLocation= :currentLocation', {
+        currentLocation,
+      })
+      .andWhere(
+        '(cardLocation.requestedDelivery = :requestedDelivery OR cardLocation.requestedRelocation = :requestedRelocation)',
+        { requestedDelivery: true, requestedRelocation: true },
+      );
+    return queryBuilder.getMany();
+  }
   //get only the list of cards that have not been received
   // default status should be 0 and should be status of cards not received
   async getCardCountByBatchNoAndStatus(
@@ -40,26 +61,27 @@ export class CardService {
       .where('card.batchNo =:batchNo', { batchNo })
       .andWhere('card.status =:status', { status });
     return await queryBuilder.getManyAndCount();
-    // .count({
-    //   where: {
-    //     batchNo,
-    //     status,
-    //   },
-    // });
-    // return count;
   }
 
   async findOne(batchNo: string, lassraId: string) {
     try {
       const queryBuilder = await this.cardRepository.createQueryBuilder('card');
-      queryBuilder
-        // .where('card.batchNo =:batchNo', { batchNo })
-        .andWhere('card.lassraId =:lassraId', { lassraId });
+      queryBuilder.andWhere('card.lassraId =:lassraId', { lassraId });
       console.log(queryBuilder, 'QueryBuilder');
       return queryBuilder.getOne();
     } catch (e) {
       throw new Error(e);
     }
+    // try {
+    //   const queryBuilder = await this.cardLocationRepository
+    //     .createQueryBuilder('cardLocation')
+    //     .leftJoinAndSelect('cardLocation.card', 'card')
+    //     .where('card.lassraId =:lassraId', { lassraId });
+    //   console.log(queryBuilder, 'QueryBuilder');
+    //   return queryBuilder.getOne();
+    // } catch (e) {
+    //   throw new Error(e);
+    // }
   }
 
   async update(id: number, updateCardDto: UpdateCardDto) {
@@ -71,7 +93,6 @@ export class CardService {
     }
     const updated = Object.assign(cardToUpdate, updateCardDto);
     return await this.cardRepository.save(updated);
-    // return `This action updates a #${id} card`;
   }
 
   remove(id: number) {

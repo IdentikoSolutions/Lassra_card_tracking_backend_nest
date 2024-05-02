@@ -17,10 +17,10 @@ import { CreateCardDto, UpdateCardDto } from '../dto';
 export class CardController {
   constructor(private readonly cardService: CardService) {}
 
-  @Post()
-  create(@Body() createCardDto: CreateCardDto) {
-    return this.cardService.create(createCardDto);
-  }
+  // @Post()
+  // create(@Body() createCardDto: CreateCardDto) {
+  //   return this.cardService.create(createCardDto);
+  // }
 
   @Get('count')
   async getCardsStatusCount(
@@ -42,6 +42,12 @@ export class CardController {
   findAll(@Query('batchNo') batchNo?: string) {
     console.log('called');
     return this.cardService.findAll(batchNo);
+  }
+  @Get('retrival')
+  getCardForRetrival(@Query('collectionCenter') collectionCenter?: string) {
+    return this.cardService.getCardForRetrivalByCollectionCenter(
+      collectionCenter,
+    );
   }
   @Get('one/:lassraId')
   findOne(
