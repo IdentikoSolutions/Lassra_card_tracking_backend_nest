@@ -1,6 +1,6 @@
-import { PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
+import { PrimaryGeneratedColumn, Column, OneToMany, Entity } from 'typeorm';
 import { CardRetrival } from './cardRetrival.entity';
-
+@Entity()
 export class Retrival {
   @PrimaryGeneratedColumn()
   id: number;

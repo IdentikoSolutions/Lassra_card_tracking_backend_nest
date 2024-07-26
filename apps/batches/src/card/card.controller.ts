@@ -7,11 +7,15 @@ import {
   Param,
   Delete,
   Query,
+  Res,
   HttpException,
   HttpStatus,
+  NotFoundException,
 } from '@nestjs/common';
 import { CardService } from './card.service';
 import { CreateCardDto, UpdateCardDto } from '../dto';
+import { EventPattern, Payload } from '@nestjs/microservices';
+import { Response } from 'express';
 
 @Controller('card')
 export class CardController {
@@ -38,25 +42,32 @@ export class CardController {
     }
   }
 
+  @EventPattern('card_created')
+  async CreateCard(@Payload() data: CreateCardDto) {
+    console.log('This will create a card');
+  }
   @Get()
   findAll(@Query('batchNo') batchNo?: string) {
     console.log('called');
     return this.cardService.findAll(batchNo);
   }
   @Get('retrival')
-  getCardForRetrival(@Query('collectionCenter') collectionCenter?: string) {
-    return this.cardService.getCardForRetrivalByCollectionCenter(
-      collectionCenter,
-    );
+  getCardForRetrival(@Query('collectionCenter') collectionCenter: string) {
+    try {
+      if (!!collectionCenter) {
+        return this.cardService.getCardForRetrivalByCollectionCenter(
+          collectionCenter,
+        );
+      }
+      return this.cardService.getAllCardForRetrival();
+    } catch (err) {
+      throw new Error(err);
+    }
   }
   @Get('one/:lassraId')
-  findOne(
-    @Param('lassraId') lassraId: string,
-    @Query('batchNo') batchNo: string,
-  ) {
-    console.log(lassraId, batchNo);
+  findOne(@Param('lassraId') lassraId: string) {
     try {
-      return this.cardService.findOne(batchNo, lassraId);
+      return this.cardService.findOne(lassraId);
     } catch (e) {
       throw new HttpException(e, HttpStatus.EXPECTATION_FAILED);
     }
@@ -66,7 +77,14 @@ export class CardController {
   update(@Param('id') id: string, @Body() updateCardDto: UpdateCardDto) {
     return this.cardService.update(+id, updateCardDto);
   }
-
+  @Post('relocation')
+  async relocateCard(
+    @Query('lassraId') lassraId: string,
+    @Query('newLocation') newLocation: string,
+  ) {
+    console.log(lassraId, newLocation);
+    return await this.cardService.relocationRequest(lassraId, newLocation);
+  }
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.cardService.remove(+id);

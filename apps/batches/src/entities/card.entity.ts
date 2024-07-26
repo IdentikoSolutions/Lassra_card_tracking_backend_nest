@@ -62,7 +62,7 @@ export class Card {
   state_of_residence: string;
 
   @Column({ default: 0 })
-  status: number; // for now 0 is defaultstatus, 1 is produced and 2 is provisioned
+  status: number; // for now 0 is defaultstatus, 1 is produced and 2 is provisioned,3 missing, 4 is for damaged, 5=collected
 
   @Column()
   surname: string;

@@ -16,9 +16,10 @@ export class CreateRetrivalDto {
   @IsString()
   retrivedBy?: string;
   @IsDateString()
-  retrievedAt?: Date = new Date();
+  retrivedAt?: Date;
   @IsString()
-  acknowlegdedBy: string;
+  acknowledgedBy?: string;
+  @IsNotEmpty()
   @Type(() => CreateCardRetrivalDto)
   cardRetrival: CreateCardRetrivalDto[];
 }

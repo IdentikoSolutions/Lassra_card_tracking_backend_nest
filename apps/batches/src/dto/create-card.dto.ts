@@ -149,7 +149,7 @@ export class CreateCardDto {
     required: true,
   })
   @Type(() => Number)
-  status: number; // for now 0 is defaultstatus, 1 is produced and 2 is provisioned
+  status: number; // for now 0 is defaultstatus, 1 is produced and 2 is provisioned,3 is for missing, 4 is for damaged
   @IsString()
   @IsNotEmpty()
   @ApiProperty({
@@ -158,4 +158,6 @@ export class CreateCardDto {
   })
   @Type(() => String)
   surname: string;
+  // @IsNumber()
+  // cardStatus: number
 }

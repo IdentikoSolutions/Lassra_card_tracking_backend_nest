@@ -417,7 +417,10 @@ function bootstrap() {
                     return [4 /*yield*/, app.startAllMicroservices()];
                 case 2:
                     _a.sent();
-                    return [4 /*yield*/, app.listen(configService.get('PORT'))];
+                    console.log('listening on port');
+                    return [4 /*yield*/, app.listen(configService.get('PORT'), function () {
+                            return console.log('listening on port');
+                        })];
                 case 3:
                     _a.sent();
                     return [2 /*return*/];
@@ -919,6 +922,171 @@ exports.LocalStrategy = LocalStrategy;
 
 /***/ }),
 
+/***/ "./libs/common/src/Rmq/index.ts":
+/*!**************************************!*\
+  !*** ./libs/common/src/Rmq/index.ts ***!
+  \**************************************/
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __exportStar = (this && this.__exportStar) || function(m, exports) {
+    for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+__exportStar(__webpack_require__(/*! ./shared.service */ "./libs/common/src/Rmq/shared.service.ts"), exports);
+__exportStar(__webpack_require__(/*! ./shared.module */ "./libs/common/src/Rmq/shared.module.ts"), exports);
+
+
+/***/ }),
+
+/***/ "./libs/common/src/Rmq/shared.module.ts":
+/*!**********************************************!*\
+  !*** ./libs/common/src/Rmq/shared.module.ts ***!
+  \**********************************************/
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.SharedModule = void 0;
+var common_1 = __webpack_require__(/*! @nestjs/common */ "@nestjs/common");
+var config_1 = __webpack_require__(/*! @nestjs/config */ "@nestjs/config");
+var microservices_1 = __webpack_require__(/*! @nestjs/microservices */ "@nestjs/microservices");
+var shared_service_1 = __webpack_require__(/*! ./shared.service */ "./libs/common/src/Rmq/shared.service.ts");
+var SharedModule = /** @class */ (function () {
+    function SharedModule() {
+    }
+    SharedModule_1 = SharedModule;
+    SharedModule.registerRmq = function (service, queue) {
+        console.log(service, 'and', queue);
+        var providers = [
+            {
+                provide: service,
+                useFactory: function (configService) {
+                    var url = configService.get('RABBIT_MQ_URI');
+                    return microservices_1.ClientProxyFactory.create({
+                        transport: microservices_1.Transport.RMQ,
+                        options: {
+                            urls: [url],
+                            queue: queue,
+                            noAck: false,
+                            queueOptions: {
+                                durable: true,
+                                arguments: {
+                                    'x-message-ttl': 30 * 24 * 60 * 60 * 1000,
+                                    'x-dead-letter-exchange': '',
+                                    'x-dead-letter-routing-key': 'dead_letter_queue', // DLQ routing key
+                                },
+                            },
+                        },
+                    });
+                },
+                inject: [config_1.ConfigService],
+            },
+        ];
+        return {
+            module: SharedModule_1,
+            providers: providers,
+            exports: providers,
+        };
+    };
+    var SharedModule_1;
+    SharedModule = SharedModule_1 = __decorate([
+        (0, common_1.Module)({
+            imports: [
+                config_1.ConfigModule.forRoot({
+                    isGlobal: true,
+                    envFilePath: './.env',
+                }),
+            ],
+            providers: [shared_service_1.SharedService],
+            exports: [shared_service_1.SharedService],
+        })
+    ], SharedModule);
+    return SharedModule;
+}());
+exports.SharedModule = SharedModule;
+
+
+/***/ }),
+
+/***/ "./libs/common/src/Rmq/shared.service.ts":
+/*!***********************************************!*\
+  !*** ./libs/common/src/Rmq/shared.service.ts ***!
+  \***********************************************/
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.SharedService = void 0;
+var common_1 = __webpack_require__(/*! @nestjs/common */ "@nestjs/common");
+var config_1 = __webpack_require__(/*! @nestjs/config */ "@nestjs/config");
+var microservices_1 = __webpack_require__(/*! @nestjs/microservices */ "@nestjs/microservices");
+var SharedService = /** @class */ (function () {
+    function SharedService(configService) {
+        this.configService = configService;
+    }
+    SharedService.prototype.getRmqOptions = function (queue) {
+        console.log(queue, 'queue');
+        var url = this.configService.get('RABBIT_MQ_URI');
+        return {
+            transport: microservices_1.Transport.RMQ,
+            options: {
+                urls: [url],
+                noAck: false,
+                queue: queue,
+                prefetchCount: 1,
+                queueOptions: {
+                    durable: true,
+                    arguments: {
+                        'x-message-ttl': 30 * 24 * 60 * 60 * 1000,
+                        'x-dead-letter-exchange': '',
+                        'x-dead-letter-routing-key': 'dead_letter_queue', // DLQ routing key
+                    }
+                    // deadLetterExchange: 'dlx',
+                    // messageTtl: 60 * 60 * 1000, 
+                }
+            },
+        };
+    };
+    SharedService.prototype.acknowledgeMessage = function (context) {
+        var channel = context.getChannelRef();
+        var message = context.getMessage();
+        channel.ack(message);
+    };
+    var _a;
+    SharedService = __decorate([
+        (0, common_1.Injectable)(),
+        __metadata("design:paramtypes", [typeof (_a = typeof config_1.ConfigService !== "undefined" && config_1.ConfigService) === "function" ? _a : Object])
+    ], SharedService);
+    return SharedService;
+}());
+exports.SharedService = SharedService;
+
+
+/***/ }),
+
 /***/ "./libs/common/src/auth/index.ts":
 /*!***************************************!*\
   !*** ./libs/common/src/auth/index.ts ***!
@@ -1094,6 +1262,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 __exportStar(__webpack_require__(/*! ./database */ "./libs/common/src/database/index.ts"), exports);
 __exportStar(__webpack_require__(/*! ./logger */ "./libs/common/src/logger/index.ts"), exports);
 __exportStar(__webpack_require__(/*! ./auth */ "./libs/common/src/auth/index.ts"), exports);
+__exportStar(__webpack_require__(/*! ./Rmq */ "./libs/common/src/Rmq/index.ts"), exports);
 
 
 /***/ }),

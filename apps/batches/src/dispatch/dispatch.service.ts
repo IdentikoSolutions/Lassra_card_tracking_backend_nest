@@ -1,7 +1,9 @@
 import {
   ConflictException,
   Injectable,
+  Logger,
   NotFoundException,
+  OnModuleInit,
 } from '@nestjs/common';
 import { CreateDispatchDto } from './dto/create-dispatch.dto';
 import { UpdateDispatchDto } from './dto/update-dispatch.dto';
@@ -11,12 +13,17 @@ import { FindOneOptions, Repository } from 'typeorm';
 import { CardLocation } from './entities/location.entity';
 import { CardDispatch } from './entities/cardDispatch.entity';
 import { AppController } from '../app.controller';
+import amqp, { ChannelWrapper } from 'amqp-connection-manager';
+import { ConfirmChannel } from 'amqplib';
 import { CardRepository } from '../repository/card.repository';
 import { Card } from '../entities';
 import { DataSource } from 'typeorm';
+import { Ctx, EventPattern, Payload, RmqContext } from '@nestjs/microservices';
 
 @Injectable()
 export class DispatchService {
+  private channelWrapper: ChannelWrapper;
+  private readonly logger = new Logger(DispatchService.name);
   constructor(
     @InjectRepository(Dispatch)
     private readonly dispatchRepository: Repository<Dispatch>,
@@ -27,7 +34,45 @@ export class DispatchService {
     @InjectRepository(CardLocation)
     private readonly cardLocationRepository: Repository<CardLocation>,
     private readonly dataSource: DataSource,
-  ) {}
+  ) {
+    // const connection = amqp.connect(['amqp://localhost']);
+    // this.channelWrapper = connection.createChannel();
+  }
+
+  // public async onModuleInit() {
+  //   try {
+  //     await this.channelWrapper.addSetup(async (channel: ConfirmChannel) => {
+  //       await channel.assertQueue('webhook', { durable: true });
+  //       await channel.consume('webhook', async (message) => {
+  //         if (message) {
+  //           const content = JSON.parse(message.content.toString());
+  //           this.logger.log('Received message:', content);
+  //           // await this.emailService.sendEmail(content);
+  //           // channel.ack(message);
+  //         }
+  //       });
+  //     });
+  //     // this.logger.log('Consumer service started and listening for messages.');
+  //   } catch (err) {
+  //     this.logger.error('Error starting the consumer:', err);
+  //   }
+  // }
+  async UpdateCardRelocationStatus(data: any) {
+    console.log(data, 'dispathc  service');
+
+    try {
+      const reqCard = await this.cardLocationRepository.findOneBy({
+        lassraId: data.lassraId,
+      });
+      if (reqCard) {
+        reqCard.requestedRelocation = true;
+        reqCard.collectionCenter = data.newCollectionCenter;
+        await this.cardLocationRepository.save(reqCard);
+      }
+    } catch (e) {
+      throw new Error(e);
+    }
+  }
   // (1)
   async getCardforDispatch(
     batchNo: number,
@@ -88,24 +133,25 @@ export class DispatchService {
     }
   }
   async ackDispatch(updateDispatchDto: UpdateDispatchDto, id: number) {
-    const cardToUpdate = await this.dispatchRepository.findOne({
+    const dispatchToUpdate = await this.dispatchRepository.findOne({
       where: { id },
       relations: ['cardDispatch'],
     });
-    // console.log(cardToUpdate, 'updateCardSDisppappe');
-    if (cardToUpdate?.dispatchStatus === 1) {
-      throw new ConflictException('Dispatch already acknowledged.');
-    }
-    if (!cardToUpdate) {
+    // console.log(dispatchToUpdate, 'updateCardSDisppappe');
+    if (!dispatchToUpdate) {
       throw new NotFoundException('Dispatch order  not found');
     }
+    if (dispatchToUpdate.dispatchStatus === 1) {
+      throw new ConflictException('Dispatch already acknowledged.');
+    }
+
     try {
       const queryBuilder = await this.dispatchRepository.manager.transaction(
         async (transactionManager) => {
-          cardToUpdate.acknowledgedAt = updateDispatchDto.acknowledgedAt;
-          cardToUpdate.acknowledgedBy = updateDispatchDto.acknowledgedBy;
-          cardToUpdate.dispatchStatus = 1;
-          cardToUpdate.cardDispatch.forEach(async (cardDispatch) => {
+          dispatchToUpdate.acknowledgedAt = updateDispatchDto.acknowledgedAt;
+          dispatchToUpdate.acknowledgedBy = updateDispatchDto.acknowledgedBy;
+          dispatchToUpdate.dispatchStatus = 1;
+          dispatchToUpdate.cardDispatch.forEach(async (cardDispatch) => {
             const currentCard = updateDispatchDto.cardDispatch.find(
               (card) => card.lassraId === cardDispatch.lassraId,
             );
@@ -117,13 +163,16 @@ export class DispatchService {
               });
               if (newLocation) {
                 newLocation.currentLocation = newLocation.collectionCenter;
+                await this.cardLocationRepository.save(newLocation);
+              } else {
+                throw new Error('card location detail not found');
               }
               return cardDispatch;
             } else {
               return cardDispatch;
             }
           });
-          const updated = await this.dispatchRepository.save(cardToUpdate);
+          const updated = await this.dispatchRepository.save(dispatchToUpdate);
           console.log(updated);
           await transactionManager.save(updated);
         },

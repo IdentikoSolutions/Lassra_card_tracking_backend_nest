@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateCardDto } from '../dto/create-card.dto';
 import { UpdateCardDto } from '../dto/update-card.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -33,12 +33,37 @@ export class CardService {
       throw new Error(e);
     }
   }
+  async relocationRequest(lassraId: string, newLocation: string) {
+    console.log('Here 1');
+
+    try {
+      const cardToReloc = await this.cardLocationRepository.findOne({
+        where: { lassraId: lassraId },
+      });
+      // console.log('Here 2', cardToReloc);
+
+      if (!cardToReloc) {
+        throw new NotFoundException('user not found');
+      }
+      if (cardToReloc.currentLocation === newLocation) {
+        throw new Error('The card location is same as current location');
+      }
+      cardToReloc.requestedRelocation = true;
+      cardToReloc.collectionCenter = newLocation;
+      // console.log('Here 3', cardToReloc);
+
+      return await this.cardLocationRepository.save(cardToReloc);
+    } catch (e) {
+      // console.log('Catcg error', e);
+
+      throw new Error('Requested could nt be completed');
+    }
+  }
   async getCardForRetrivalByCollectionCenter(currentLocation: string) {
-    console.log('selecting requests');
+    console.log('selecting requests', currentLocation);
     //this will get card that requested relocation and/or home delivery by collectionCenter
-    const queryBuilder = await this.cardLocationRepository.createQueryBuilder(
-      'cardLocation',
-    );
+    const queryBuilder =
+      this.cardLocationRepository.createQueryBuilder('cardLocation');
     queryBuilder
       .leftJoinAndSelect('cardLocation.card', 'card')
       .where('cardLocation.currentLocation= :currentLocation', {
@@ -63,27 +88,33 @@ export class CardService {
     return await queryBuilder.getManyAndCount();
   }
 
-  async findOne(batchNo: string, lassraId: string) {
+  async findOne(lassraId: string) {
     try {
-      const queryBuilder = await this.cardRepository.createQueryBuilder('card');
+      const loc = await this.cardLocationRepository.findOne({
+        where: { lassraId: lassraId },
+      });
+      const queryBuilder = this.cardRepository.createQueryBuilder('card');
       queryBuilder.andWhere('card.lassraId =:lassraId', { lassraId });
-      console.log(queryBuilder, 'QueryBuilder');
-      return queryBuilder.getOne();
+      const card = await queryBuilder.getOne();
+      if (loc) {
+        card.cardLocation = loc;
+      }
+      return await card;
     } catch (e) {
       throw new Error(e);
     }
-    // try {
-    //   const queryBuilder = await this.cardLocationRepository
-    //     .createQueryBuilder('cardLocation')
-    //     .leftJoinAndSelect('cardLocation.card', 'card')
-    //     .where('card.lassraId =:lassraId', { lassraId });
-    //   console.log(queryBuilder, 'QueryBuilder');
-    //   return queryBuilder.getOne();
-    // } catch (e) {
-    //   throw new Error(e);
-    // }
   }
-
+  // async collectCard(lassraId: string, collectionCenter: string) {
+  //   try {
+  //     const result = await this.findOne(lassraId);
+  //     //   where: { lassraId },
+  //     //   relations: ['card'],
+  //     // });
+  //     console.log(result);
+  //   } catch (e) {
+  //     throw new NotFoundException(e.message);
+  //   }
+  // }
   async update(id: number, updateCardDto: UpdateCardDto) {
     const cardToUpdate = await this.cardRepository.findOne({
       where: { id: id },
@@ -97,5 +128,34 @@ export class CardService {
 
   remove(id: number) {
     return `This action removes a #${id} card`;
+  }
+  async getAllCardForRetrival() {
+    const queryBuilder =
+      this.cardLocationRepository.createQueryBuilder('cardLocation');
+    queryBuilder
+      .leftJoinAndSelect('cardLocation.card', 'card')
+      .where(
+        '(cardLocation.requestedDelivery = :requestedDelivery OR cardLocation.requestedRelocation = :requestedRelocation)',
+        { requestedDelivery: true, requestedRelocation: true },
+      );
+    // return
+    const results = await queryBuilder.getMany();
+
+    const groupedResults = {};
+    results.forEach((result) => {
+      if (!groupedResults[result.currentLocation]) {
+        groupedResults[result.currentLocation] = [];
+      }
+      groupedResults[result.currentLocation].push(result);
+    });
+
+    const formattedResults = Object.keys(groupedResults).map((location) => {
+      return {
+        location,
+        data: groupedResults[location],
+      };
+    });
+
+    return formattedResults;
   }
 }

@@ -38,7 +38,7 @@ export class BatchController {
       });
       const isBatchEmpty = await this.batchService.findAll();
       // console.log(isBatchEmpty, 'Is batch Empty');
-      if (isBatchEmpty.length) {
+      if (!isBatchEmpty.length) {
         throw new Error('Database already seeded');
       }
       const result = await Axios.get('/Batch/GetValidBatches');

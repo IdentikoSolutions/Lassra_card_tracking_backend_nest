@@ -20,6 +20,13 @@ export class RetrivalController {
     return await this.retrivalService.create(createRetrivalDto);
   }
 
+  @Post('delivery')
+  async requestDelivery(@Body() createRetrivalDto: any) {
+    console.log(createRetrivalDto, 'retrival controller');
+
+    return await this.retrivalService.requestDelivery(createRetrivalDto);
+  }
+
   @Get()
   findAll() {
     return this.retrivalService.findAll();
@@ -33,7 +40,7 @@ export class RetrivalController {
   @Patch(':id')
   update(
     @Param('id') id: string,
-    @Body() updateRetrivalDto: UpdateRetrivalDto,
+    @Body() updateRetrivalDto: any, //UpdateRetrivalDto, this updateRetrival is throwing error so
   ) {
     return this.retrivalService.update(+id, updateRetrivalDto);
   }

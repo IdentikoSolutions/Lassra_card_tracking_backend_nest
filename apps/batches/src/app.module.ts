@@ -1,7 +1,7 @@
 import { Module, forwardRef } from '@nestjs/common';
 import { AppService } from './app.service';
 import { AppController } from './app.controller';
-import { LoggerModule } from '@app/common';
+import { LoggerModule, SharedModule } from '@app/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Batch, Receipt, Card, CardReceipt } from './entities';
 import { ConfigModule, ConfigService } from '@nestjs/config';
@@ -15,6 +15,7 @@ import { ProvisionModule } from './provision/provision.module';
 import { CardprovisionModule } from './cardprovision/cardprovision.module';
 import { DispatchModule } from './dispatch/dispatch.module';
 import { RetrivalModule } from './retrival/retrival.module';
+import { DeliveryModule } from './delivery/delivery.module';
 
 @Module({
   imports: [
@@ -25,6 +26,11 @@ import { RetrivalModule } from './retrival/retrival.module';
     ConfigModule.forRoot({
       isGlobal: true,
     }),
+    // SharedModule.registerRmq(
+    //   'WEBHOOK_SERVICE',
+    //   process.env.RABBIT_MQ_WEBHOOK_QUEUE,
+    // ),
+    // WebhooksModule,
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => ({
@@ -37,7 +43,7 @@ import { RetrivalModule } from './retrival/retrival.module';
         entities: [__dirname + '/**/*.entity{.ts,.js}'],
         autoLoadEntities: true,
         synchronize: true,
-        logging: true,
+        // logging: true,
       }),
       inject: [ConfigService],
     }),
@@ -50,9 +56,20 @@ import { RetrivalModule } from './retrival/retrival.module';
     CardprovisionModule,
     DispatchModule,
     RetrivalModule,
+    DeliveryModule,
   ],
   controllers: [AppController],
-  providers: [AppService, ConfigService],
+  providers: [
+    AppService,
+    ConfigService,
+    // RmqService,
+    // { provide: 'WEBHOOK_SERVICE', useValue: RmqService },
+
+    // {
+    //   provide: APP_FILTER,
+    //   useClass: HttpExceptionFilter,
+    // },
+  ],
   exports: [ConfigService],
 })
 export class AppModule {}
