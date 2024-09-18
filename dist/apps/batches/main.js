@@ -73,6 +73,9 @@ var cardprovision_module_1 = __webpack_require__(/*! ./cardprovision/cardprovisi
 var dispatch_module_1 = __webpack_require__(/*! ./dispatch/dispatch.module */ "./apps/batches/src/dispatch/dispatch.module.ts");
 var retrival_module_1 = __webpack_require__(/*! ./retrival/retrival.module */ "./apps/batches/src/retrival/retrival.module.ts");
 var delivery_module_1 = __webpack_require__(/*! ./delivery/delivery.module */ "./apps/batches/src/delivery/delivery.module.ts");
+var backup_module_1 = __webpack_require__(/*! ./backup/backup.module */ "./apps/batches/src/backup/backup.module.ts");
+var backup_service_1 = __webpack_require__(/*! ./backup/backup.service */ "./apps/batches/src/backup/backup.service.ts");
+var schedule_1 = __webpack_require__(/*! @nestjs/schedule */ "@nestjs/schedule");
 var AppModule = /** @class */ (function () {
     function AppModule() {
     }
@@ -86,11 +89,7 @@ var AppModule = /** @class */ (function () {
                 config_1.ConfigModule.forRoot({
                     isGlobal: true,
                 }),
-                // SharedModule.registerRmq(
-                //   'WEBHOOK_SERVICE',
-                //   process.env.RABBIT_MQ_WEBHOOK_QUEUE,
-                // ),
-                // WebhooksModule,
+                schedule_1.ScheduleModule.forRoot(),
                 typeorm_1.TypeOrmModule.forRootAsync({
                     imports: [config_1.ConfigModule],
                     useFactory: function (configService) { return ({
@@ -103,7 +102,6 @@ var AppModule = /** @class */ (function () {
                         entities: [__dirname + '/**/*.entity{.ts,.js}'],
                         autoLoadEntities: true,
                         synchronize: true,
-                        // logging: true,
                     }); },
                     inject: [config_1.ConfigService],
                 }),
@@ -117,11 +115,14 @@ var AppModule = /** @class */ (function () {
                 dispatch_module_1.DispatchModule,
                 retrival_module_1.RetrivalModule,
                 delivery_module_1.DeliveryModule,
+                backup_module_1.BackupModule,
             ],
             controllers: [app_controller_1.AppController],
             providers: [
                 app_service_1.AppService,
                 config_1.ConfigService,
+                // BackupCron,
+                backup_service_1.BackupService,
                 // RmqService,
                 // { provide: 'WEBHOOK_SERVICE', useValue: RmqService },
                 // {
@@ -164,6 +165,438 @@ var AppService = /** @class */ (function () {
     return AppService;
 }());
 exports.AppService = AppService;
+
+
+/***/ }),
+
+/***/ "./apps/batches/src/backup/backup.controller.ts":
+/*!******************************************************!*\
+  !*** ./apps/batches/src/backup/backup.controller.ts ***!
+  \******************************************************/
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+var __param = (this && this.__param) || function (paramIndex, decorator) {
+    return function (target, key) { decorator(target, key, paramIndex); }
+};
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __generator = (this && this.__generator) || function (thisArg, body) {
+    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
+    return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
+    function verb(n) { return function (v) { return step([n, v]); }; }
+    function step(op) {
+        if (f) throw new TypeError("Generator is already executing.");
+        while (_) try {
+            if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
+            if (y = 0, t) op = [op[0] & 2, t.value];
+            switch (op[0]) {
+                case 0: case 1: t = op; break;
+                case 4: _.label++; return { value: op[1], done: false };
+                case 5: _.label++; y = op[1]; op = [0]; continue;
+                case 7: op = _.ops.pop(); _.trys.pop(); continue;
+                default:
+                    if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
+                    if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
+                    if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
+                    if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
+                    if (t[2]) _.ops.pop();
+                    _.trys.pop(); continue;
+            }
+            op = body.call(thisArg, _);
+        } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
+        if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
+    }
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.BackupController = void 0;
+var common_1 = __webpack_require__(/*! @nestjs/common */ "@nestjs/common");
+var backup_service_1 = __webpack_require__(/*! ./backup.service */ "./apps/batches/src/backup/backup.service.ts");
+var BackupController = /** @class */ (function () {
+    function BackupController(backupService) {
+        this.backupService = backupService;
+    }
+    BackupController.prototype.restoreBackup = function (backupFile) {
+        return __awaiter(this, void 0, void 0, function () {
+            var result;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        if (!backupFile)
+                            throw new Error('provide backup file path');
+                        return [4 /*yield*/, this.backupService.restoreBackup(backupFile)];
+                    case 1:
+                        result = _a.sent();
+                        // const result = await this.backupService.restoreBackup(
+                        //   '../../../../backup.sql',
+                        // );
+                        return [2 /*return*/, { message: 'Backup restored successfully' }];
+                }
+            });
+        });
+    };
+    BackupController.prototype.createBackup = function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var e_1;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        _a.trys.push([0, 2, , 3]);
+                        return [4 /*yield*/, this.backupService.createBackup()];
+                    case 1:
+                        _a.sent();
+                        return [2 /*return*/, { message: 'Backup created successfully' }];
+                    case 2:
+                        e_1 = _a.sent();
+                        console.log(e_1.message);
+                        return [3 /*break*/, 3];
+                    case 3: return [2 /*return*/];
+                }
+            });
+        });
+    };
+    var _a;
+    __decorate([
+        (0, common_1.Post)('restore'),
+        __param(0, (0, common_1.Body)('backupFile')),
+        __metadata("design:type", Function),
+        __metadata("design:paramtypes", [String]),
+        __metadata("design:returntype", Promise)
+    ], BackupController.prototype, "restoreBackup", null);
+    __decorate([
+        (0, common_1.Post)('create'),
+        __metadata("design:type", Function),
+        __metadata("design:paramtypes", []),
+        __metadata("design:returntype", Promise)
+    ], BackupController.prototype, "createBackup", null);
+    BackupController = __decorate([
+        (0, common_1.Controller)('backup'),
+        __metadata("design:paramtypes", [typeof (_a = typeof backup_service_1.BackupService !== "undefined" && backup_service_1.BackupService) === "function" ? _a : Object])
+    ], BackupController);
+    return BackupController;
+}());
+exports.BackupController = BackupController;
+
+
+/***/ }),
+
+/***/ "./apps/batches/src/backup/backup.cron.ts":
+/*!************************************************!*\
+  !*** ./apps/batches/src/backup/backup.cron.ts ***!
+  \************************************************/
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __generator = (this && this.__generator) || function (thisArg, body) {
+    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
+    return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
+    function verb(n) { return function (v) { return step([n, v]); }; }
+    function step(op) {
+        if (f) throw new TypeError("Generator is already executing.");
+        while (_) try {
+            if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
+            if (y = 0, t) op = [op[0] & 2, t.value];
+            switch (op[0]) {
+                case 0: case 1: t = op; break;
+                case 4: _.label++; return { value: op[1], done: false };
+                case 5: _.label++; y = op[1]; op = [0]; continue;
+                case 7: op = _.ops.pop(); _.trys.pop(); continue;
+                default:
+                    if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
+                    if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
+                    if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
+                    if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
+                    if (t[2]) _.ops.pop();
+                    _.trys.pop(); continue;
+            }
+            op = body.call(thisArg, _);
+        } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
+        if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
+    }
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.BackupCron = void 0;
+var common_1 = __webpack_require__(/*! @nestjs/common */ "@nestjs/common");
+var schedule_1 = __webpack_require__(/*! @nestjs/schedule */ "@nestjs/schedule");
+var backup_service_1 = __webpack_require__(/*! ./backup.service */ "./apps/batches/src/backup/backup.service.ts");
+var BackupCron = /** @class */ (function () {
+    function BackupCron(backupService) {
+        this.backupService = backupService;
+    }
+    BackupCron.prototype.createBackup = function () {
+        return __awaiter(this, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        console.log('Creating backup');
+                        // return;
+                        return [4 /*yield*/, this.backupService.createBackup()];
+                    case 1:
+                        // return;
+                        _a.sent();
+                        return [2 /*return*/];
+                }
+            });
+        });
+    };
+    var _a;
+    __decorate([
+        (0, schedule_1.Cron)('0 0 12 * * *') // runs every day at 12:00 PM
+        ,
+        __metadata("design:type", Function),
+        __metadata("design:paramtypes", []),
+        __metadata("design:returntype", Promise)
+    ], BackupCron.prototype, "createBackup", null);
+    BackupCron = __decorate([
+        (0, common_1.Injectable)(),
+        __metadata("design:paramtypes", [typeof (_a = typeof backup_service_1.BackupService !== "undefined" && backup_service_1.BackupService) === "function" ? _a : Object])
+    ], BackupCron);
+    return BackupCron;
+}());
+exports.BackupCron = BackupCron;
+
+
+/***/ }),
+
+/***/ "./apps/batches/src/backup/backup.module.ts":
+/*!**************************************************!*\
+  !*** ./apps/batches/src/backup/backup.module.ts ***!
+  \**************************************************/
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.BackupModule = void 0;
+var common_1 = __webpack_require__(/*! @nestjs/common */ "@nestjs/common");
+var backup_service_1 = __webpack_require__(/*! ./backup.service */ "./apps/batches/src/backup/backup.service.ts");
+var backup_controller_1 = __webpack_require__(/*! ./backup.controller */ "./apps/batches/src/backup/backup.controller.ts");
+var backup_cron_1 = __webpack_require__(/*! ./backup.cron */ "./apps/batches/src/backup/backup.cron.ts");
+var BackupModule = /** @class */ (function () {
+    function BackupModule() {
+    }
+    BackupModule = __decorate([
+        (0, common_1.Module)({
+            controllers: [backup_controller_1.BackupController],
+            providers: [backup_service_1.BackupService, backup_cron_1.BackupCron],
+        })
+    ], BackupModule);
+    return BackupModule;
+}());
+exports.BackupModule = BackupModule;
+
+
+/***/ }),
+
+/***/ "./apps/batches/src/backup/backup.service.ts":
+/*!***************************************************!*\
+  !*** ./apps/batches/src/backup/backup.service.ts ***!
+  \***************************************************/
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __generator = (this && this.__generator) || function (thisArg, body) {
+    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
+    return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
+    function verb(n) { return function (v) { return step([n, v]); }; }
+    function step(op) {
+        if (f) throw new TypeError("Generator is already executing.");
+        while (_) try {
+            if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
+            if (y = 0, t) op = [op[0] & 2, t.value];
+            switch (op[0]) {
+                case 0: case 1: t = op; break;
+                case 4: _.label++; return { value: op[1], done: false };
+                case 5: _.label++; y = op[1]; op = [0]; continue;
+                case 7: op = _.ops.pop(); _.trys.pop(); continue;
+                default:
+                    if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
+                    if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
+                    if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
+                    if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
+                    if (t[2]) _.ops.pop();
+                    _.trys.pop(); continue;
+            }
+            op = body.call(thisArg, _);
+        } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
+        if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
+    }
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.BackupService = void 0;
+var common_1 = __webpack_require__(/*! @nestjs/common */ "@nestjs/common");
+var config_1 = __webpack_require__(/*! @nestjs/config */ "@nestjs/config");
+var typeorm_1 = __webpack_require__(/*! typeorm */ "typeorm");
+var childProcess = __importStar(__webpack_require__(/*! child_process */ "child_process"));
+// import psql from 'psql';
+var BackupService = /** @class */ (function () {
+    function BackupService(configService, dataSource) {
+        this.configService = configService;
+        this.dataSource = dataSource;
+    }
+    BackupService.prototype.createBackup = function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var username, database, password, host, port, command, options;
+            return __generator(this, function (_a) {
+                try {
+                    username = this.configService.get('POSTGRES_USER');
+                    database = this.configService.get('POSTGRES_DATABASE');
+                    password = this.configService.get('POSTGRES_PASSWORD');
+                    host = this.configService.get('POSTGRES_HOST');
+                    port = this.configService.get('POSTGRES_PORT');
+                    command = "docker exec  card_tracker-postgres-1 pg_dump -U ".concat(username, " -h ").concat(host, " -p ").concat(port, " -d ").concat(database, " > backup.sql");
+                    options = {
+                        env: {
+                            PGPASSWORD: password,
+                        },
+                    };
+                    childProcess.exec(command, options, function (error, stdout, stderr) {
+                        if (error) {
+                            throw error;
+                        }
+                        console.log('Executing backup');
+                        if (stdout) {
+                            console.log("pg_dump stdout: ".concat(stdout));
+                        }
+                        if (stderr) {
+                            console.error("pg_dump stderr: ".concat(stderr));
+                        }
+                    });
+                }
+                catch (err) {
+                    console.error(err);
+                    throw err;
+                }
+                return [2 /*return*/];
+            });
+        });
+    };
+    // ...
+    BackupService.prototype.restoreBackup = function (backupFile) {
+        return __awaiter(this, void 0, void 0, function () {
+            var username, database, host, port, command, ps;
+            return __generator(this, function (_a) {
+                try {
+                    username = this.configService.get('POSTGRES_USER');
+                    database = this.configService.get('POSTGRES_DATABASE');
+                    host = this.configService.get('POSTGRES_HOST');
+                    port = this.configService.get('POSTGRES_PORT');
+                    command = "psql -U ".concat(username, " -d ").concat(database, " -h ").concat(host, " -p ").concat(port, " < backup.sql");
+                    ps = childProcess.exec(command, function (error, stdout, stderr) {
+                        if (error) {
+                            throw error;
+                        }
+                        console.log('Executing backup');
+                        console.log("pg_dump stdout: ".concat(stdout));
+                        console.error("pg_dump stderr: ".concat(stderr));
+                    });
+                    ps.stdout.on('data', function (data) {
+                        console.log("psql stdout: ".concat(data));
+                    });
+                    ps.stderr.on('data', function (data) {
+                        console.error("psql stderr: ".concat(data));
+                    });
+                    ps.on('close', function (code) {
+                        if (code === 0) {
+                            console.log("Backup restored from: ".concat(backupFile));
+                        }
+                        else {
+                            console.error("Error restoring backup: ".concat(code));
+                        }
+                    });
+                }
+                catch (err) {
+                    console.error(err);
+                    throw err;
+                }
+                return [2 /*return*/];
+            });
+        });
+    };
+    var _a, _b;
+    BackupService = __decorate([
+        (0, common_1.Injectable)(),
+        __metadata("design:paramtypes", [typeof (_a = typeof config_1.ConfigService !== "undefined" && config_1.ConfigService) === "function" ? _a : Object, typeof (_b = typeof typeorm_1.DataSource !== "undefined" && typeorm_1.DataSource) === "function" ? _b : Object])
+    ], BackupService);
+    return BackupService;
+}());
+exports.BackupService = BackupService;
 
 
 /***/ }),
@@ -223,11 +656,14 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.BatchController = void 0;
 var common_1 = __webpack_require__(/*! @nestjs/common */ "@nestjs/common");
 var batch_service_1 = __webpack_require__(/*! ./batch.service */ "./apps/batches/src/batch/batch.service.ts");
-var axios_1 = __webpack_require__(/*! axios */ "axios");
+var axios_1 = __importDefault(__webpack_require__(/*! axios */ "axios"));
 var dto_1 = __webpack_require__(/*! ../dto */ "./apps/batches/src/dto/index.ts");
 var BatchController = /** @class */ (function () {
     function BatchController(batchService) {
@@ -272,6 +708,7 @@ var BatchController = /** @class */ (function () {
                         return [4 /*yield*/, Axios_1.get('/Batch/GetValidBatches')];
                     case 2:
                         result = _b.sent();
+                        console.log(result, '=result');
                         return [4 /*yield*/, Promise.allSettled(result.data.map(function (item) { return __awaiter(_this, void 0, void 0, function () {
                                 var _a;
                                 return __generator(this, function (_b) {
@@ -753,7 +1190,6 @@ exports.CardController = void 0;
 var common_1 = __webpack_require__(/*! @nestjs/common */ "@nestjs/common");
 var card_service_1 = __webpack_require__(/*! ./card.service */ "./apps/batches/src/card/card.service.ts");
 var dto_1 = __webpack_require__(/*! ../dto */ "./apps/batches/src/dto/index.ts");
-var microservices_1 = __webpack_require__(/*! @nestjs/microservices */ "@nestjs/microservices");
 var CardController = /** @class */ (function () {
     function CardController(cardService) {
         this.cardService = cardService;
@@ -779,14 +1215,10 @@ var CardController = /** @class */ (function () {
             });
         });
     };
-    CardController.prototype.CreateCard = function (data) {
-        return __awaiter(this, void 0, void 0, function () {
-            return __generator(this, function (_a) {
-                console.log('This will create a card');
-                return [2 /*return*/];
-            });
-        });
-    };
+    // @EventPattern('card_created')
+    // async CreateCard(@Payload() data: CreateCardDto) {
+    //   console.log('This will create a card');
+    // }
     CardController.prototype.findAll = function (batchNo) {
         console.log('called');
         return this.cardService.findAll(batchNo);
@@ -813,13 +1245,22 @@ var CardController = /** @class */ (function () {
     CardController.prototype.update = function (id, updateCardDto) {
         return this.cardService.update(+id, updateCardDto);
     };
+    //this endpoint is called by external service to update card location information when a fresident request relocation.
     CardController.prototype.relocateCard = function (lassraId, newLocation) {
         return __awaiter(this, void 0, void 0, function () {
             return __generator(this, function (_a) {
                 switch (_a.label) {
-                    case 0:
-                        console.log(lassraId, newLocation);
-                        return [4 /*yield*/, this.cardService.relocationRequest(lassraId, newLocation)];
+                    case 0: return [4 /*yield*/, this.cardService.relocationRequest(lassraId, newLocation)];
+                    case 1: return [2 /*return*/, _a.sent()];
+                }
+            });
+        });
+    };
+    CardController.prototype.requestDeliveryCard = function (lassraId) {
+        return __awaiter(this, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, this.cardService.requestDelivery(lassraId)];
                     case 1: return [2 /*return*/, _a.sent()];
                 }
             });
@@ -828,7 +1269,7 @@ var CardController = /** @class */ (function () {
     CardController.prototype.remove = function (id) {
         return this.cardService.remove(+id);
     };
-    var _a, _b, _c;
+    var _a, _b;
     __decorate([
         (0, common_1.Get)('count'),
         __param(0, (0, common_1.Query)('batchNo')),
@@ -837,13 +1278,6 @@ var CardController = /** @class */ (function () {
         __metadata("design:paramtypes", [String, Number]),
         __metadata("design:returntype", Promise)
     ], CardController.prototype, "getCardsStatusCount", null);
-    __decorate([
-        (0, microservices_1.EventPattern)('card_created'),
-        __param(0, (0, microservices_1.Payload)()),
-        __metadata("design:type", Function),
-        __metadata("design:paramtypes", [typeof (_a = typeof dto_1.CreateCardDto !== "undefined" && dto_1.CreateCardDto) === "function" ? _a : Object]),
-        __metadata("design:returntype", Promise)
-    ], CardController.prototype, "CreateCard", null);
     __decorate([
         (0, common_1.Get)(),
         __param(0, (0, common_1.Query)('batchNo')),
@@ -870,7 +1304,7 @@ var CardController = /** @class */ (function () {
         __param(0, (0, common_1.Param)('id')),
         __param(1, (0, common_1.Body)()),
         __metadata("design:type", Function),
-        __metadata("design:paramtypes", [String, typeof (_b = typeof dto_1.UpdateCardDto !== "undefined" && dto_1.UpdateCardDto) === "function" ? _b : Object]),
+        __metadata("design:paramtypes", [String, typeof (_a = typeof dto_1.UpdateCardDto !== "undefined" && dto_1.UpdateCardDto) === "function" ? _a : Object]),
         __metadata("design:returntype", void 0)
     ], CardController.prototype, "update", null);
     __decorate([
@@ -882,6 +1316,13 @@ var CardController = /** @class */ (function () {
         __metadata("design:returntype", Promise)
     ], CardController.prototype, "relocateCard", null);
     __decorate([
+        (0, common_1.Post)('request_delivery'),
+        __param(0, (0, common_1.Query)('lassraId')),
+        __metadata("design:type", Function),
+        __metadata("design:paramtypes", [String]),
+        __metadata("design:returntype", Promise)
+    ], CardController.prototype, "requestDeliveryCard", null);
+    __decorate([
         (0, common_1.Delete)(':id'),
         __param(0, (0, common_1.Param)('id')),
         __metadata("design:type", Function),
@@ -890,7 +1331,7 @@ var CardController = /** @class */ (function () {
     ], CardController.prototype, "remove", null);
     CardController = __decorate([
         (0, common_1.Controller)('card'),
-        __metadata("design:paramtypes", [typeof (_c = typeof card_service_1.CardService !== "undefined" && card_service_1.CardService) === "function" ? _c : Object])
+        __metadata("design:paramtypes", [typeof (_b = typeof card_service_1.CardService !== "undefined" && card_service_1.CardService) === "function" ? _b : Object])
     ], CardController);
     return CardController;
 }());
@@ -1012,9 +1453,6 @@ var CardService = /** @class */ (function () {
         this.cardRepository = cardRepository;
         this.cardLocationRepository = cardLocationRepository;
     }
-    // create(createCardDto: CreateCardDto) {
-    //   return 'This action adds a new card';
-    // }
     //get all the card or get all cards for a batch when you supply batchNo as queryParam
     CardService.prototype.findAll = function (batchNo) {
         return __awaiter(this, void 0, void 0, function () {
@@ -1041,22 +1479,19 @@ var CardService = /** @class */ (function () {
             });
         });
     };
+    //this method is called by external service to update card location information
     CardService.prototype.relocationRequest = function (lassraId, newLocation) {
         return __awaiter(this, void 0, void 0, function () {
             var cardToReloc, e_2;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        console.log('Here 1');
-                        _a.label = 1;
-                    case 1:
-                        _a.trys.push([1, 4, , 5]);
+                        _a.trys.push([0, 3, , 4]);
                         return [4 /*yield*/, this.cardLocationRepository.findOne({
                                 where: { lassraId: lassraId },
                             })];
-                    case 2:
+                    case 1:
                         cardToReloc = _a.sent();
-                        // console.log('Here 2', cardToReloc);
                         if (!cardToReloc) {
                             throw new common_1.NotFoundException('user not found');
                         }
@@ -1066,14 +1501,43 @@ var CardService = /** @class */ (function () {
                         cardToReloc.requestedRelocation = true;
                         cardToReloc.collectionCenter = newLocation;
                         return [4 /*yield*/, this.cardLocationRepository.save(cardToReloc)];
-                    case 3: 
+                    case 2: 
                     // console.log('Here 3', cardToReloc);
                     return [2 /*return*/, _a.sent()];
-                    case 4:
+                    case 3:
                         e_2 = _a.sent();
                         // console.log('Catcg error', e);
                         throw new Error('Requested could nt be completed');
-                    case 5: return [2 /*return*/];
+                    case 4: return [2 /*return*/];
+                }
+            });
+        });
+    };
+    CardService.prototype.requestDelivery = function (lassraId) {
+        return __awaiter(this, void 0, void 0, function () {
+            var cardToDeliver, err_1;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        _a.trys.push([0, 3, , 4]);
+                        return [4 /*yield*/, this.cardLocationRepository.findOne({
+                                where: { lassraId: lassraId },
+                            })];
+                    case 1:
+                        cardToDeliver = _a.sent();
+                        if (!cardToDeliver) {
+                            throw new common_1.NotFoundException('User not found');
+                        }
+                        if (cardToDeliver.requestedDelivery === true) {
+                            return [2 /*return*/];
+                        }
+                        cardToDeliver.requestedDelivery = true;
+                        return [4 /*yield*/, this.cardLocationRepository.save(cardToDeliver)];
+                    case 2: return [2 /*return*/, _a.sent()];
+                    case 3:
+                        err_1 = _a.sent();
+                        throw new Error(err_1.message);
+                    case 4: return [2 /*return*/];
                 }
             });
         });
@@ -1241,38 +1705,86 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __generator = (this && this.__generator) || function (thisArg, body) {
+    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
+    return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
+    function verb(n) { return function (v) { return step([n, v]); }; }
+    function step(op) {
+        if (f) throw new TypeError("Generator is already executing.");
+        while (_) try {
+            if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
+            if (y = 0, t) op = [op[0] & 2, t.value];
+            switch (op[0]) {
+                case 0: case 1: t = op; break;
+                case 4: _.label++; return { value: op[1], done: false };
+                case 5: _.label++; y = op[1]; op = [0]; continue;
+                case 7: op = _.ops.pop(); _.trys.pop(); continue;
+                default:
+                    if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
+                    if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
+                    if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
+                    if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
+                    if (t[2]) _.ops.pop();
+                    _.trys.pop(); continue;
+            }
+            op = body.call(thisArg, _);
+        } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
+        if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
+    }
+};
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.CardprovisionController = void 0;
 var common_1 = __webpack_require__(/*! @nestjs/common */ "@nestjs/common");
 var cardprovision_service_1 = __webpack_require__(/*! ./cardprovision.service */ "./apps/batches/src/cardprovision/cardprovision.service.ts");
-var create_cardprovision_dto_1 = __webpack_require__(/*! ./dto/create-cardprovision.dto */ "./apps/batches/src/cardprovision/dto/create-cardprovision.dto.ts");
-var update_cardprovision_dto_1 = __webpack_require__(/*! ./dto/update-cardprovision.dto */ "./apps/batches/src/cardprovision/dto/update-cardprovision.dto.ts");
+// import { CreateCardProvisionDto } from './dto/create-cardprovision.dto';
+// import { UpdateCardprovisionDto } from './dto/update-cardprovision.dto';
 var CardprovisionController = /** @class */ (function () {
     function CardprovisionController(cardprovisionService) {
         this.cardprovisionService = cardprovisionService;
     }
-    CardprovisionController.prototype.create = function (createCardProvisionDto) {
-        return this.cardprovisionService.create(createCardProvisionDto);
+    CardprovisionController.prototype.create = function (body) {
+        return __awaiter(this, void 0, void 0, function () {
+            var lassraId, provisionId, result, e_1;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        console.log(body);
+                        lassraId = body.lassraId, provisionId = body.provisionId;
+                        _a.label = 1;
+                    case 1:
+                        _a.trys.push([1, 3, , 4]);
+                        return [4 /*yield*/, this.cardprovisionService.create(lassraId, +provisionId)];
+                    case 2:
+                        result = _a.sent();
+                        console.log(result);
+                        return [2 /*return*/, result];
+                    case 3:
+                        e_1 = _a.sent();
+                        throw new common_1.HttpException(e_1.message, common_1.HttpStatus.INTERNAL_SERVER_ERROR);
+                    case 4: return [2 /*return*/];
+                }
+            });
+        });
     };
     CardprovisionController.prototype.findAll = function (provision_id) {
         return this.cardprovisionService.findAll(provision_id);
     };
-    CardprovisionController.prototype.findOne = function (id) {
-        return this.cardprovisionService.findOne(+id);
-    };
-    CardprovisionController.prototype.update = function (id, updateCardprovisionDto) {
-        return this.cardprovisionService.update(+id, updateCardprovisionDto);
-    };
-    CardprovisionController.prototype.remove = function (id) {
-        return this.cardprovisionService.remove(+id);
-    };
-    var _a, _b, _c;
+    var _a;
     __decorate([
         (0, common_1.Post)(),
         __param(0, (0, common_1.Body)()),
         __metadata("design:type", Function),
-        __metadata("design:paramtypes", [typeof (_a = typeof create_cardprovision_dto_1.CreateCardProvisionDto !== "undefined" && create_cardprovision_dto_1.CreateCardProvisionDto) === "function" ? _a : Object]),
-        __metadata("design:returntype", void 0)
+        __metadata("design:paramtypes", [Object]),
+        __metadata("design:returntype", Promise)
     ], CardprovisionController.prototype, "create", null);
     __decorate([
         (0, common_1.Get)(),
@@ -1281,31 +1793,9 @@ var CardprovisionController = /** @class */ (function () {
         __metadata("design:paramtypes", [Number]),
         __metadata("design:returntype", void 0)
     ], CardprovisionController.prototype, "findAll", null);
-    __decorate([
-        (0, common_1.Get)(':id'),
-        __param(0, (0, common_1.Param)('id')),
-        __metadata("design:type", Function),
-        __metadata("design:paramtypes", [String]),
-        __metadata("design:returntype", void 0)
-    ], CardprovisionController.prototype, "findOne", null);
-    __decorate([
-        (0, common_1.Patch)(':id'),
-        __param(0, (0, common_1.Param)('id')),
-        __param(1, (0, common_1.Body)()),
-        __metadata("design:type", Function),
-        __metadata("design:paramtypes", [String, typeof (_b = typeof update_cardprovision_dto_1.UpdateCardprovisionDto !== "undefined" && update_cardprovision_dto_1.UpdateCardprovisionDto) === "function" ? _b : Object]),
-        __metadata("design:returntype", void 0)
-    ], CardprovisionController.prototype, "update", null);
-    __decorate([
-        (0, common_1.Delete)(':id'),
-        __param(0, (0, common_1.Param)('id')),
-        __metadata("design:type", Function),
-        __metadata("design:paramtypes", [String]),
-        __metadata("design:returntype", void 0)
-    ], CardprovisionController.prototype, "remove", null);
     CardprovisionController = __decorate([
         (0, common_1.Controller)('cardprovision'),
-        __metadata("design:paramtypes", [typeof (_c = typeof cardprovision_service_1.CardprovisionService !== "undefined" && cardprovision_service_1.CardprovisionService) === "function" ? _c : Object])
+        __metadata("design:paramtypes", [typeof (_a = typeof cardprovision_service_1.CardprovisionService !== "undefined" && cardprovision_service_1.CardprovisionService) === "function" ? _a : Object])
     ], CardprovisionController);
     return CardprovisionController;
 }());
@@ -1344,7 +1834,7 @@ var CardprovisionModule = /** @class */ (function () {
         (0, common_1.Module)({
             imports: [
                 common_2.DatabaseModule,
-                typeorm_1.TypeOrmModule.forFeature([entities_1.Receipt, entities_1.Batch, provision_entity_1.Provision, cardprovision_entity_1.CardProvision]),
+                typeorm_1.TypeOrmModule.forFeature([entities_1.Receipt, entities_1.Batch, provision_entity_1.Provision, cardprovision_entity_1.CardProvision, entities_1.Card]),
                 // forwardRef(() => BatchModule),
             ],
             controllers: [cardprovision_controller_1.CardprovisionController],
@@ -1373,6 +1863,9 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 };
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+var __param = (this && this.__param) || function (paramIndex, decorator) {
+    return function (target, key) { decorator(target, key, paramIndex); }
 };
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
@@ -1416,11 +1909,68 @@ var common_1 = __webpack_require__(/*! @nestjs/common */ "@nestjs/common");
 var typeorm_1 = __webpack_require__(/*! @nestjs/typeorm */ "@nestjs/typeorm");
 var typeorm_2 = __webpack_require__(/*! typeorm */ "typeorm");
 var cardprovision_entity_1 = __webpack_require__(/*! ./entities/cardprovision.entity */ "./apps/batches/src/cardprovision/entities/cardprovision.entity.ts");
+var provision_entity_1 = __webpack_require__(/*! ../provision/entities/provision.entity */ "./apps/batches/src/provision/entities/provision.entity.ts");
+var entities_1 = __webpack_require__(/*! ../entities */ "./apps/batches/src/entities/index.ts");
 var CardprovisionService = /** @class */ (function () {
-    function CardprovisionService() {
+    function CardprovisionService(cardProvisionRepository, provisionRepository, cardRepository) {
+        this.cardProvisionRepository = cardProvisionRepository;
+        this.provisionRepository = provisionRepository;
+        this.cardRepository = cardRepository;
     }
-    CardprovisionService.prototype.create = function (createCardProvisionDto) {
-        return 'This action adds a new cardprovision';
+    CardprovisionService.prototype.create = function (lassraId, provisionId) {
+        return __awaiter(this, void 0, void 0, function () {
+            var provision, cardtoUpdate, result, newcardReceipt, result2, e_1;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        console.log('creater cardProvisom', lassraId, provisionId);
+                        _a.label = 1;
+                    case 1:
+                        _a.trys.push([1, 9, , 10]);
+                        return [4 /*yield*/, this.provisionRepository.findOne({
+                                where: { id: provisionId },
+                            })];
+                    case 2:
+                        provision = _a.sent();
+                        console.log(provision, 'first comnsole');
+                        if (provision && provision.provisionStatus === 1) {
+                            throw new Error('Provision receipt already completed');
+                        }
+                        return [4 /*yield*/, this.cardRepository.findOne({
+                                where: { lassraId: lassraId },
+                            })];
+                    case 3:
+                        cardtoUpdate = _a.sent();
+                        console.log(cardtoUpdate, 'second comnsole');
+                        if (!(cardtoUpdate && cardtoUpdate.batchNo === provision.batchNo)) return [3 /*break*/, 5];
+                        if (cardtoUpdate.status === 2) {
+                            throw new Error('Card already added to the provision receipt');
+                        }
+                        cardtoUpdate.status = 2;
+                        return [4 /*yield*/, this.cardRepository.save(cardtoUpdate)];
+                    case 4:
+                        result = _a.sent();
+                        console.log(result, 'third comnsole');
+                        return [3 /*break*/, 6];
+                    case 5: throw new Error('Card not Added');
+                    case 6: return [4 /*yield*/, this.cardProvisionRepository.create({
+                            lassraId: lassraId,
+                            provision: provision,
+                        })];
+                    case 7:
+                        newcardReceipt = _a.sent();
+                        return [4 /*yield*/, this.cardProvisionRepository.save(newcardReceipt)];
+                    case 8:
+                        result2 = _a.sent();
+                        console.log(result2, 'fourth comnsole');
+                        return [2 /*return*/, "Card with lassraId: ".concat(lassraId, " added to Receipt: ").concat(provisionId, " successfully")];
+                    case 9:
+                        e_1 = _a.sent();
+                        throw new Error(e_1.message);
+                    case 10: return [2 /*return*/];
+                }
+            });
+        });
     };
     CardprovisionService.prototype.findAll = function (provision_id) {
         return __awaiter(this, void 0, void 0, function () {
@@ -1442,112 +1992,17 @@ var CardprovisionService = /** @class */ (function () {
             });
         });
     };
-    CardprovisionService.prototype.findOne = function (id) {
-        return "This action returns a #".concat(id, " cardprovision");
-    };
-    CardprovisionService.prototype.update = function (id, updateCardprovisionDto) {
-        return "This action updates a #".concat(id, " cardprovision");
-    };
-    CardprovisionService.prototype.remove = function (id) {
-        return "This action removes a #".concat(id, " cardprovision");
-    };
-    var _a;
-    __decorate([
-        (0, typeorm_1.InjectRepository)(cardprovision_entity_1.CardProvision),
-        __metadata("design:type", typeof (_a = typeof typeorm_2.Repository !== "undefined" && typeorm_2.Repository) === "function" ? _a : Object)
-    ], CardprovisionService.prototype, "cardProvisionRepository", void 0);
+    var _a, _b, _c;
     CardprovisionService = __decorate([
-        (0, common_1.Injectable)()
+        (0, common_1.Injectable)(),
+        __param(0, (0, typeorm_1.InjectRepository)(cardprovision_entity_1.CardProvision)),
+        __param(1, (0, typeorm_1.InjectRepository)(provision_entity_1.Provision)),
+        __param(2, (0, typeorm_1.InjectRepository)(entities_1.Card)),
+        __metadata("design:paramtypes", [typeof (_a = typeof typeorm_2.Repository !== "undefined" && typeorm_2.Repository) === "function" ? _a : Object, typeof (_b = typeof typeorm_2.Repository !== "undefined" && typeorm_2.Repository) === "function" ? _b : Object, typeof (_c = typeof typeorm_2.Repository !== "undefined" && typeorm_2.Repository) === "function" ? _c : Object])
     ], CardprovisionService);
     return CardprovisionService;
 }());
 exports.CardprovisionService = CardprovisionService;
-
-
-/***/ }),
-
-/***/ "./apps/batches/src/cardprovision/dto/create-cardprovision.dto.ts":
-/*!************************************************************************!*\
-  !*** ./apps/batches/src/cardprovision/dto/create-cardprovision.dto.ts ***!
-  \************************************************************************/
-/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
-
-
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.CreateCardProvisionDto = void 0;
-var class_transformer_1 = __webpack_require__(/*! class-transformer */ "class-transformer");
-var class_validator_1 = __webpack_require__(/*! class-validator */ "class-validator");
-var dto_1 = __webpack_require__(/*! ../../dto */ "./apps/batches/src/dto/index.ts");
-var create_provision_dto_1 = __webpack_require__(/*! ../../provision/dto/create-provision.dto */ "./apps/batches/src/provision/dto/create-provision.dto.ts");
-var CreateCardProvisionDto = /** @class */ (function () {
-    function CreateCardProvisionDto() {
-    }
-    var _a, _b;
-    __decorate([
-        (0, class_validator_1.IsString)(),
-        (0, class_validator_1.IsNotEmpty)(),
-        __metadata("design:type", String)
-    ], CreateCardProvisionDto.prototype, "lassraId", void 0);
-    __decorate([
-        (0, class_validator_1.IsDefined)(),
-        (0, class_transformer_1.Type)(function () { return dto_1.CreateCardDto; }),
-        __metadata("design:type", typeof (_a = typeof dto_1.CreateCardDto !== "undefined" && dto_1.CreateCardDto) === "function" ? _a : Object)
-    ], CreateCardProvisionDto.prototype, "card", void 0);
-    __decorate([
-        (0, class_validator_1.IsDefined)(),
-        (0, class_transformer_1.Type)(function () { return create_provision_dto_1.CreateProvisionDto; }),
-        __metadata("design:type", typeof (_b = typeof create_provision_dto_1.CreateProvisionDto !== "undefined" && create_provision_dto_1.CreateProvisionDto) === "function" ? _b : Object)
-    ], CreateCardProvisionDto.prototype, "provision", void 0);
-    return CreateCardProvisionDto;
-}());
-exports.CreateCardProvisionDto = CreateCardProvisionDto;
-
-
-/***/ }),
-
-/***/ "./apps/batches/src/cardprovision/dto/update-cardprovision.dto.ts":
-/*!************************************************************************!*\
-  !*** ./apps/batches/src/cardprovision/dto/update-cardprovision.dto.ts ***!
-  \************************************************************************/
-/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
-
-
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = function (d, b) {
-        extendStatics = Object.setPrototypeOf ||
-            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
-        return extendStatics(d, b);
-    };
-    return function (d, b) {
-        if (typeof b !== "function" && b !== null)
-            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.UpdateCardprovisionDto = void 0;
-var swagger_1 = __webpack_require__(/*! @nestjs/swagger */ "@nestjs/swagger");
-var create_cardprovision_dto_1 = __webpack_require__(/*! ./create-cardprovision.dto */ "./apps/batches/src/cardprovision/dto/create-cardprovision.dto.ts");
-var UpdateCardprovisionDto = /** @class */ (function (_super) {
-    __extends(UpdateCardprovisionDto, _super);
-    function UpdateCardprovisionDto() {
-        return _super !== null && _super.apply(this, arguments) || this;
-    }
-    return UpdateCardprovisionDto;
-}((0, swagger_1.PartialType)(create_cardprovision_dto_1.CreateCardProvisionDto)));
-exports.UpdateCardprovisionDto = UpdateCardprovisionDto;
 
 
 /***/ }),
@@ -1668,10 +2123,24 @@ var CardReceiptController = /** @class */ (function () {
     function CardReceiptController(cardReceiptService) {
         this.cardReceiptService = cardReceiptService;
     }
-    // @Post()
-    // create(@Body() createCardReceiptDto: CreateCardReceiptDto) {
-    //   return this.cardReceiptService.create(createCardReceiptDto);
-    // }
+    CardReceiptController.prototype.create = function (body) {
+        return __awaiter(this, void 0, void 0, function () {
+            var lassraId, receiptId, e_1;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        _a.trys.push([0, 2, , 3]);
+                        lassraId = body.lassraId, receiptId = body.receiptId;
+                        return [4 /*yield*/, this.cardReceiptService.create(lassraId, receiptId)];
+                    case 1: return [2 /*return*/, _a.sent()];
+                    case 2:
+                        e_1 = _a.sent();
+                        throw new common_1.HttpException(e_1.message, common_1.HttpStatus.BAD_REQUEST);
+                    case 3: return [2 /*return*/];
+                }
+            });
+        });
+    };
     CardReceiptController.prototype.findAll = function (receipt_id) {
         return __awaiter(this, void 0, void 0, function () {
             return __generator(this, function (_a) {
@@ -1683,6 +2152,13 @@ var CardReceiptController = /** @class */ (function () {
         });
     };
     var _a;
+    __decorate([
+        (0, common_1.Post)(),
+        __param(0, (0, common_1.Body)()),
+        __metadata("design:type", Function),
+        __metadata("design:paramtypes", [Object]),
+        __metadata("design:returntype", Promise)
+    ], CardReceiptController.prototype, "create", null);
     __decorate([
         (0, common_1.Get)(),
         __param(0, (0, common_1.Query)('receipt_id')),
@@ -1722,15 +2198,19 @@ var cardreceipt_controller_1 = __webpack_require__(/*! ./cardreceipt.controller 
 var common_2 = __webpack_require__(/*! @app/common */ "./libs/common/src/index.ts");
 var typeorm_1 = __webpack_require__(/*! @nestjs/typeorm */ "@nestjs/typeorm");
 // import { Batch } from 'typeorm';
-// import { Receipt } from '../entities/receipt.entity';
+var receipt_entity_1 = __webpack_require__(/*! ../entities/receipt.entity */ "./apps/batches/src/entities/receipt.entity.ts");
 var cardreceipt_entity_1 = __webpack_require__(/*! ../entities/cardreceipt.entity */ "./apps/batches/src/entities/cardreceipt.entity.ts");
+var entities_1 = __webpack_require__(/*! ../entities */ "./apps/batches/src/entities/index.ts");
 // import { Card } from '../entities/card.entity';
 var CardReceiptModule = /** @class */ (function () {
     function CardReceiptModule() {
     }
     CardReceiptModule = __decorate([
         (0, common_1.Module)({
-            imports: [common_2.DatabaseModule, typeorm_1.TypeOrmModule.forFeature([cardreceipt_entity_1.CardReceipt])],
+            imports: [
+                common_2.DatabaseModule,
+                typeorm_1.TypeOrmModule.forFeature([cardreceipt_entity_1.CardReceipt, receipt_entity_1.Receipt, entities_1.Card]),
+            ],
             controllers: [cardreceipt_controller_1.CardReceiptController],
             providers: [cardreceipt_service_1.CardReceiptService],
         })
@@ -1804,13 +2284,63 @@ var common_1 = __webpack_require__(/*! @nestjs/common */ "@nestjs/common");
 var typeorm_1 = __webpack_require__(/*! @nestjs/typeorm */ "@nestjs/typeorm");
 var entities_1 = __webpack_require__(/*! ../entities */ "./apps/batches/src/entities/index.ts");
 var repository_1 = __webpack_require__(/*! ../repository */ "./apps/batches/src/repository/index.ts");
+var receipt_repository_1 = __webpack_require__(/*! ../repository/receipt.repository */ "./apps/batches/src/repository/receipt.repository.ts");
+var card_repository_1 = __webpack_require__(/*! ../repository/card.repository */ "./apps/batches/src/repository/card.repository.ts");
 var CardReceiptService = /** @class */ (function () {
-    function CardReceiptService(cardReceiptRepository) {
+    function CardReceiptService(cardReceiptRepository, receiptRepository, cardRepository) {
         this.cardReceiptRepository = cardReceiptRepository;
+        this.receiptRepository = receiptRepository;
+        this.cardRepository = cardRepository;
     }
-    // create(createCardReceiptDto: CreateCardReceiptDto) {
-    //   return 'This action adds a new cardreceipt';
-    // }
+    //creates new card receipt
+    CardReceiptService.prototype.create = function (lassraId, receiptId) {
+        return __awaiter(this, void 0, void 0, function () {
+            var receipt, cardtoUpdate, newcardReceipt, e_1;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        _a.trys.push([0, 8, , 9]);
+                        return [4 /*yield*/, this.receiptRepository.findOne({
+                                where: { id: receiptId },
+                            })];
+                    case 1:
+                        receipt = _a.sent();
+                        if (receipt && receipt.receivedStatus === 1) {
+                            throw new Error('Receipt already completed');
+                        }
+                        return [4 /*yield*/, this.cardRepository.findOne({
+                                where: { lassraId: lassraId },
+                            })];
+                    case 2:
+                        cardtoUpdate = _a.sent();
+                        if (!(cardtoUpdate && cardtoUpdate.batchNo === receipt.batchNo)) return [3 /*break*/, 4];
+                        if (cardtoUpdate.status === 1) {
+                            throw new Error('Card already added to the receipt');
+                        }
+                        cardtoUpdate.status = 1;
+                        return [4 /*yield*/, this.cardRepository.save(cardtoUpdate)];
+                    case 3:
+                        _a.sent();
+                        return [3 /*break*/, 5];
+                    case 4: throw new Error('Card not Added');
+                    case 5: return [4 /*yield*/, this.cardReceiptRepository.create({
+                            lassraId: lassraId,
+                            receipt: receipt,
+                        })];
+                    case 6:
+                        newcardReceipt = _a.sent();
+                        return [4 /*yield*/, this.cardReceiptRepository.save(newcardReceipt)];
+                    case 7:
+                        _a.sent();
+                        return [2 /*return*/, "Card with lassraId: ".concat(lassraId, " added to Receipt: ").concat(receiptId, " successfully")];
+                    case 8:
+                        e_1 = _a.sent();
+                        throw new Error(e_1.message);
+                    case 9: return [2 /*return*/];
+                }
+            });
+        });
+    };
     CardReceiptService.prototype.findAll = function (receipt_id) {
         return __awaiter(this, void 0, void 0, function () {
             var cards;
@@ -1831,11 +2361,13 @@ var CardReceiptService = /** @class */ (function () {
             });
         });
     };
-    var _a;
+    var _a, _b, _c;
     CardReceiptService = __decorate([
         (0, common_1.Injectable)(),
         __param(0, (0, typeorm_1.InjectRepository)(entities_1.CardReceipt)),
-        __metadata("design:paramtypes", [typeof (_a = typeof repository_1.CardReceiptRepository !== "undefined" && repository_1.CardReceiptRepository) === "function" ? _a : Object])
+        __param(1, (0, typeorm_1.InjectRepository)(entities_1.Receipt)),
+        __param(2, (0, typeorm_1.InjectRepository)(entities_1.Card)),
+        __metadata("design:paramtypes", [typeof (_a = typeof repository_1.CardReceiptRepository !== "undefined" && repository_1.CardReceiptRepository) === "function" ? _a : Object, typeof (_b = typeof receipt_repository_1.ReceiptRepository !== "undefined" && receipt_repository_1.ReceiptRepository) === "function" ? _b : Object, typeof (_c = typeof card_repository_1.CardRepository !== "undefined" && card_repository_1.CardRepository) === "function" ? _c : Object])
     ], CardReceiptService);
     return CardReceiptService;
 }());
@@ -1961,9 +2493,11 @@ var DeliveryController = /** @class */ (function () {
             });
         });
     };
+    //request by status true/false true for delivery order created and false for not created.
     DeliveryController.prototype.getRequest = function (created) {
         return this.deliveryService.getRequestForDelivery(created);
     };
+    //This endpoint create a new delivery order
     DeliveryController.prototype.create = function (createDeliveryDto) {
         return this.deliveryService.create(createDeliveryDto);
     };
@@ -1987,7 +2521,7 @@ var DeliveryController = /** @class */ (function () {
         }
     };
     DeliveryController.prototype.updateMany = function (updateDeliveryDto) {
-        console.log('updateMany');
+        // console.log('updateMany');
         return this.deliveryService.updateMany(updateDeliveryDto);
     };
     DeliveryController.prototype.remove = function (id) {
@@ -2012,7 +2546,7 @@ var DeliveryController = /** @class */ (function () {
         __metadata("design:returntype", Promise)
     ], DeliveryController.prototype, "filterDeliveryOrders", null);
     __decorate([
-        (0, common_1.Get)() // get delivery all delivery request. if a query 'created' is added it get request by status true/false true for delivery order created and false for not created.
+        (0, common_1.Get)() // get delivery all delivery request. if a query 'created' is added it get 
         ,
         __param(0, (0, common_1.Query)('created')),
         __metadata("design:type", Function),
@@ -2225,7 +2759,7 @@ var DeliveryService = /** @class */ (function () {
             });
         });
     };
-    DeliveryService.prototype.isDeliveryOrdered = function (lassraId) {
+    DeliveryService.prototype.isDeliveryOrderCreated = function (lassraId) {
         return __awaiter(this, void 0, void 0, function () {
             var isdeliveryorderCreated;
             return __generator(this, function (_a) {
@@ -2253,7 +2787,7 @@ var DeliveryService = /** @class */ (function () {
                                 var isOrdered;
                                 return __generator(this, function (_a) {
                                     switch (_a.label) {
-                                        case 0: return [4 /*yield*/, this.isDeliveryOrdered(card.lassraId)];
+                                        case 0: return [4 /*yield*/, this.isDeliveryOrderCreated(card.lassraId)];
                                         case 1:
                                             isOrdered = _a.sent();
                                             return [2 /*return*/, isOrdered ? card : null];
@@ -2280,7 +2814,7 @@ var DeliveryService = /** @class */ (function () {
                                 var isOrdered;
                                 return __generator(this, function (_a) {
                                     switch (_a.label) {
-                                        case 0: return [4 /*yield*/, this.isDeliveryOrdered(card.lassraId)];
+                                        case 0: return [4 /*yield*/, this.isDeliveryOrderCreated(card.lassraId)];
                                         case 1:
                                             isOrdered = _a.sent();
                                             return [2 /*return*/, isOrdered ? null : card];
@@ -2490,6 +3024,7 @@ var DeliveryService = /** @class */ (function () {
                             }); })];
                     case 1:
                         _a.sent();
+                        //******Dispatch a message to the external service to update the card status
                         return [2 /*return*/, 'Card delivered and received successfully'];
                     case 2:
                         err_3 = _a.sent();
@@ -2762,7 +3297,13 @@ var typeorm_1 = __webpack_require__(/*! @nestjs/typeorm */ "@nestjs/typeorm");
 var typeorm_2 = __webpack_require__(/*! typeorm */ "typeorm");
 var location_entity_1 = __webpack_require__(/*! ./entities/location.entity */ "./apps/batches/src/dispatch/entities/location.entity.ts");
 var entities_1 = __webpack_require__(/*! ../entities */ "./apps/batches/src/entities/index.ts");
-var microservices_1 = __webpack_require__(/*! @nestjs/microservices */ "@nestjs/microservices");
+// import {
+//   Ctx,
+//   EventPattern,
+//   MessagePattern,
+//   Payload,
+//   RmqContext,
+// } from '@nestjs/microservices';
 var DispatchController = /** @class */ (function () {
     function DispatchController(dispatchService, cardLocationRepository, cardRepository) {
         this.dispatchService = dispatchService;
@@ -2770,40 +3311,32 @@ var DispatchController = /** @class */ (function () {
         this.cardRepository = cardRepository;
     }
     //Eventsaa
-    DispatchController.prototype.UpdateCardRelocationStatus = function (data, context) {
-        return __awaiter(this, void 0, void 0, function () {
-            var channel, originalMsg, e_1;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0:
-                        channel = context.getChannelRef();
-                        originalMsg = context.getMessage();
-                        console.log(originalMsg, 'eventPattern');
-                        _a.label = 1;
-                    case 1:
-                        _a.trys.push([1, 3, , 4]);
-                        return [4 /*yield*/, this.dispatchService.UpdateCardRelocationStatus(data)];
-                    case 2:
-                        _a.sent();
-                        console.log('Executeed here');
-                        // channel.ack(originalMsg);
-                        console.log('Executeed here 3');
-                        return [2 /*return*/];
-                    case 3:
-                        e_1 = _a.sent();
-                        console.log(e_1, 'errrrrrrooooo');
-                        return [3 /*break*/, 4];
-                    case 4: return [2 /*return*/];
-                }
-            });
-        });
-    };
+    // @EventPattern({ cmd: 'relocation_request' })
+    // async UpdateCardRelocationStatus(
+    //   @Payload() data: any,
+    //   @Ctx() context: RmqContext,
+    // ) {
+    //   const channel = context.getChannelRef();
+    //   const originalMsg = context.getMessage();
+    //   console.log(originalMsg, 'eventPattern');
+    //   try {
+    //     await this.dispatchService.UpdateCardRelocationStatus(data);
+    //     console.log('Executeed here');
+    //     // channel.ack(originalMsg);
+    //     console.log('Executeed here 3');
+    //     return;
+    //   } catch (e) {
+    //     console.log(e, 'errrrrrrooooo');
+    //     // channel.nack(originalMsg, false, true);
+    //   }
+    //   //implement logic for updating relocation request
+    // }
     DispatchController.prototype.create = function (createDispatchDto) {
         return this.dispatchService.createDispatch(createDispatchDto);
     };
     DispatchController.prototype.seedcardLocation = function () {
         return __awaiter(this, void 0, void 0, function () {
-            var seed, cards, locationsData, _i, locationsData_1, x, newLocData, e_2;
+            var seed, cards, locationsData, _i, locationsData_1, x, newLocData, e_1;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -2843,7 +3376,7 @@ var DispatchController = /** @class */ (function () {
                         return [3 /*break*/, 4];
                     case 7: return [2 /*return*/, 'seeding successful'];
                     case 8:
-                        e_2 = _a.sent();
+                        e_1 = _a.sent();
                         throw new common_1.HttpException('Database already seeded', common_1.HttpStatus.FORBIDDEN);
                     case 9: return [2 /*return*/];
                 }
@@ -2903,20 +3436,12 @@ var DispatchController = /** @class */ (function () {
     DispatchController.prototype.remove = function (id) {
         // return this.dispatchService.remove(+id);
     };
-    var _a, _b, _c, _d, _e, _f;
-    __decorate([
-        (0, microservices_1.EventPattern)({ cmd: 'relocation_request' }),
-        __param(0, (0, microservices_1.Payload)()),
-        __param(1, (0, microservices_1.Ctx)()),
-        __metadata("design:type", Function),
-        __metadata("design:paramtypes", [Object, typeof (_a = typeof microservices_1.RmqContext !== "undefined" && microservices_1.RmqContext) === "function" ? _a : Object]),
-        __metadata("design:returntype", Promise)
-    ], DispatchController.prototype, "UpdateCardRelocationStatus", null);
+    var _a, _b, _c, _d, _e;
     __decorate([
         (0, common_1.Post)(),
         __param(0, (0, common_1.Body)()),
         __metadata("design:type", Function),
-        __metadata("design:paramtypes", [typeof (_b = typeof create_dispatch_dto_1.CreateDispatchDto !== "undefined" && create_dispatch_dto_1.CreateDispatchDto) === "function" ? _b : Object]),
+        __metadata("design:paramtypes", [typeof (_a = typeof create_dispatch_dto_1.CreateDispatchDto !== "undefined" && create_dispatch_dto_1.CreateDispatchDto) === "function" ? _a : Object]),
         __metadata("design:returntype", void 0)
     ], DispatchController.prototype, "create", null);
     __decorate([
@@ -2960,7 +3485,7 @@ var DispatchController = /** @class */ (function () {
         __param(0, (0, common_1.Param)('id')),
         __param(1, (0, common_1.Body)()),
         __metadata("design:type", Function),
-        __metadata("design:paramtypes", [String, typeof (_c = typeof Partial !== "undefined" && Partial) === "function" ? _c : Object]),
+        __metadata("design:paramtypes", [String, typeof (_b = typeof Partial !== "undefined" && Partial) === "function" ? _b : Object]),
         __metadata("design:returntype", void 0)
     ], DispatchController.prototype, "update", null);
     __decorate([
@@ -2974,7 +3499,7 @@ var DispatchController = /** @class */ (function () {
         (0, common_1.Controller)('dispatch'),
         __param(1, (0, typeorm_1.InjectRepository)(location_entity_1.CardLocation)),
         __param(2, (0, typeorm_1.InjectRepository)(entities_1.Card)),
-        __metadata("design:paramtypes", [typeof (_d = typeof dispatch_service_1.DispatchService !== "undefined" && dispatch_service_1.DispatchService) === "function" ? _d : Object, typeof (_e = typeof typeorm_2.Repository !== "undefined" && typeorm_2.Repository) === "function" ? _e : Object, typeof (_f = typeof typeorm_2.Repository !== "undefined" && typeorm_2.Repository) === "function" ? _f : Object])
+        __metadata("design:paramtypes", [typeof (_c = typeof dispatch_service_1.DispatchService !== "undefined" && dispatch_service_1.DispatchService) === "function" ? _c : Object, typeof (_d = typeof typeorm_2.Repository !== "undefined" && typeorm_2.Repository) === "function" ? _d : Object, typeof (_e = typeof typeorm_2.Repository !== "undefined" && typeorm_2.Repository) === "function" ? _e : Object])
     ], DispatchController);
     return DispatchController;
 }());
@@ -3007,7 +3532,7 @@ var entities_1 = __webpack_require__(/*! ../entities */ "./apps/batches/src/enti
 var cardDispatch_entity_1 = __webpack_require__(/*! ./entities/cardDispatch.entity */ "./apps/batches/src/dispatch/entities/cardDispatch.entity.ts");
 var dispatch_entity_1 = __webpack_require__(/*! ./entities/dispatch.entity */ "./apps/batches/src/dispatch/entities/dispatch.entity.ts");
 var location_entity_1 = __webpack_require__(/*! ./entities/location.entity */ "./apps/batches/src/dispatch/entities/location.entity.ts");
-var microservices_1 = __webpack_require__(/*! @nestjs/microservices */ "@nestjs/microservices");
+// import { ClientsModule, Transport } from '@nestjs/microservices';
 var DispatchModule = /** @class */ (function () {
     function DispatchModule() {
     }
@@ -3016,27 +3541,27 @@ var DispatchModule = /** @class */ (function () {
             imports: [
                 common_2.DatabaseModule,
                 typeorm_1.TypeOrmModule.forFeature([entities_1.Card, dispatch_entity_1.Dispatch, cardDispatch_entity_1.CardDispatch, location_entity_1.CardLocation]),
-                microservices_1.ClientsModule.register([
-                    {
-                        name: 'WEBHOOK_SERVICE',
-                        transport: microservices_1.Transport.RMQ,
-                        options: {
-                            urls: [process.env.RABBIT_MQ_URI],
-                            queue: 'webhook',
-                            noAck: false,
-                            queueOptions: {
-                                durable: true,
-                                arguments: {
-                                    'x-message-ttl': 30 * 24 * 60 * 60 * 1000,
-                                    'x-dead-letter-exchange': '',
-                                    'x-dead-letter-routing-key': 'dead_letter_queue', // DLQ routing key
-                                },
-                                // deadLetterExchange: 'dlx',
-                                // messageTtl: 60 * 60 * 1000,
-                            },
-                        },
-                    },
-                ]),
+                // ClientsModule.register([
+                //   {
+                //     name: 'WEBHOOK_SERVICE',
+                //     transport: Transport.RMQ,
+                //     options: {
+                //       urls: [process.env.RABBIT_MQ_URI],
+                //       queue: 'webhook',
+                //       noAck: false,
+                //       queueOptions: {
+                //         durable: true, // queue survives broker restart
+                //         arguments: {
+                //           'x-message-ttl': 30 * 24 * 60 * 60 * 1000, // 30 days TTL
+                //           'x-dead-letter-exchange': '', // Default exchange
+                //           'x-dead-letter-routing-key': 'dead_letter_queue', // DLQ routing key
+                //         },
+                //         // deadLetterExchange: 'dlx',
+                //         // messageTtl: 60 * 60 * 1000,
+                //       },
+                //     },
+                //   },
+                // ]),
             ],
             controllers: [dispatch_controller_1.DispatchController],
             providers: [dispatch_service_1.DispatchService],
@@ -3126,6 +3651,7 @@ var cardDispatch_entity_1 = __webpack_require__(/*! ./entities/cardDispatch.enti
 var card_repository_1 = __webpack_require__(/*! ../repository/card.repository */ "./apps/batches/src/repository/card.repository.ts");
 var entities_1 = __webpack_require__(/*! ../entities */ "./apps/batches/src/entities/index.ts");
 var typeorm_3 = __webpack_require__(/*! typeorm */ "typeorm");
+// import { Ctx, EventPattern, Payload, RmqContext } from '@nestjs/microservices';
 var DispatchService = /** @class */ (function () {
     function DispatchService(dispatchRepository, cardDispatchRepository, cardRepository, cardLocationRepository, dataSource) {
         this.dispatchRepository = dispatchRepository;
@@ -3134,55 +3660,32 @@ var DispatchService = /** @class */ (function () {
         this.cardLocationRepository = cardLocationRepository;
         this.dataSource = dataSource;
         this.logger = new common_1.Logger(DispatchService_1.name);
-        // const connection = amqp.connect(['amqp://localhost']);
-        // this.channelWrapper = connection.createChannel();
     }
     DispatchService_1 = DispatchService;
-    // public async onModuleInit() {
-    //   try {
-    //     await this.channelWrapper.addSetup(async (channel: ConfirmChannel) => {
-    //       await channel.assertQueue('webhook', { durable: true });
-    //       await channel.consume('webhook', async (message) => {
-    //         if (message) {
-    //           const content = JSON.parse(message.content.toString());
-    //           this.logger.log('Received message:', content);
-    //           // await this.emailService.sendEmail(content);
-    //           // channel.ack(message);
-    //         }
-    //       });
-    //     });
-    //     // this.logger.log('Consumer service started and listening for messages.');
-    //   } catch (err) {
-    //     this.logger.error('Error starting the consumer:', err);
-    //   }
-    // }
     DispatchService.prototype.UpdateCardRelocationStatus = function (data) {
         return __awaiter(this, void 0, void 0, function () {
             var reqCard, e_1;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        console.log(data, 'dispathc  service');
-                        _a.label = 1;
-                    case 1:
-                        _a.trys.push([1, 5, , 6]);
+                        _a.trys.push([0, 4, , 5]);
                         return [4 /*yield*/, this.cardLocationRepository.findOneBy({
                                 lassraId: data.lassraId,
                             })];
-                    case 2:
+                    case 1:
                         reqCard = _a.sent();
-                        if (!reqCard) return [3 /*break*/, 4];
+                        if (!reqCard) return [3 /*break*/, 3];
                         reqCard.requestedRelocation = true;
                         reqCard.collectionCenter = data.newCollectionCenter;
                         return [4 /*yield*/, this.cardLocationRepository.save(reqCard)];
-                    case 3:
+                    case 2:
                         _a.sent();
-                        _a.label = 4;
-                    case 4: return [3 /*break*/, 6];
-                    case 5:
+                        _a.label = 3;
+                    case 3: return [3 /*break*/, 5];
+                    case 4:
                         e_1 = _a.sent();
                         throw new Error(e_1);
-                    case 6: return [2 /*return*/];
+                    case 5: return [2 /*return*/];
                 }
             });
         });
@@ -3327,9 +3830,10 @@ var DispatchService = /** @class */ (function () {
                                             return [4 /*yield*/, this.dispatchRepository.save(dispatchToUpdate)];
                                         case 1:
                                             updated = _a.sent();
-                                            console.log(updated);
+                                            // console.log(updated);
                                             return [4 /*yield*/, transactionManager.save(updated)];
                                         case 2:
+                                            // console.log(updated);
                                             _a.sent();
                                             return [2 /*return*/];
                                     }
@@ -3353,16 +3857,13 @@ var DispatchService = /** @class */ (function () {
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        console.log('rom findALL');
-                        _a.label = 1;
-                    case 1:
-                        _a.trys.push([1, 3, , 4]);
+                        _a.trys.push([0, 2, , 3]);
                         return [4 /*yield*/, this.dispatchRepository.find({})];
-                    case 2: return [2 /*return*/, _a.sent()];
-                    case 3:
+                    case 1: return [2 /*return*/, _a.sent()];
+                    case 2:
                         e_4 = _a.sent();
                         throw new Error(e_4);
-                    case 4: return [2 /*return*/];
+                    case 3: return [2 /*return*/];
                 }
             });
         });
@@ -3380,7 +3881,6 @@ var DispatchService = /** @class */ (function () {
                         })];
                     case 1:
                         dispatch = _a.sent();
-                        console.log(dispatch);
                         _a.label = 2;
                     case 2:
                         _a.trys.push([2, 5, , 6]);
@@ -3392,7 +3892,7 @@ var DispatchService = /** @class */ (function () {
                     case 4: return [3 /*break*/, 6];
                     case 5:
                         e_5 = _a.sent();
-                        throw new Error('this is my err' + e_5.message);
+                        throw new Error('Error: ' + e_5.message);
                     case 6: return [2 /*return*/];
                 }
             });
@@ -4841,6 +5341,8 @@ var nestjs_pino_1 = __webpack_require__(/*! nestjs-pino */ "nestjs-pino");
 var config_1 = __webpack_require__(/*! @nestjs/config */ "@nestjs/config");
 var swagger_1 = __webpack_require__(/*! @nestjs/swagger */ "@nestjs/swagger");
 var app_module_1 = __webpack_require__(/*! ./app.module */ "./apps/batches/src/app.module.ts");
+// import { SharedService } from '@app/common';
+// import { RmqOptions, Transport } from '@nestjs/microservices';
 var response_interceptors_1 = __webpack_require__(/*! libs/common/src/auth/interceptors/response.interceptors */ "./libs/common/src/auth/interceptors/response.interceptors.ts");
 function bootstrap() {
     return __awaiter(this, void 0, void 0, function () {
@@ -4942,12 +5444,10 @@ exports.CreateProvisionDto = void 0;
 var swagger_1 = __webpack_require__(/*! @nestjs/swagger */ "@nestjs/swagger");
 var class_transformer_1 = __webpack_require__(/*! class-transformer */ "class-transformer");
 var class_validator_1 = __webpack_require__(/*! class-validator */ "class-validator");
-var dto_1 = __webpack_require__(/*! ../../dto */ "./apps/batches/src/dto/index.ts");
-var create_cardprovision_dto_1 = __webpack_require__(/*! ../../cardprovision/dto/create-cardprovision.dto */ "./apps/batches/src/cardprovision/dto/create-cardprovision.dto.ts");
 var CreateProvisionDto = /** @class */ (function () {
     function CreateProvisionDto() {
     }
-    var _a, _b;
+    var _a;
     __decorate([
         (0, class_validator_1.IsString)(),
         (0, swagger_1.ApiProperty)({
@@ -4956,6 +5456,14 @@ var CreateProvisionDto = /** @class */ (function () {
         }),
         __metadata("design:type", String)
     ], CreateProvisionDto.prototype, "provisionedBy", void 0);
+    __decorate([
+        (0, class_validator_1.IsString)(),
+        (0, swagger_1.ApiProperty)({
+            example: 'Jome',
+            required: true,
+        }),
+        __metadata("design:type", String)
+    ], CreateProvisionDto.prototype, "receivedBy", void 0);
     __decorate([
         (0, class_validator_1.IsDate)(),
         (0, class_transformer_1.Type)(function () { return Date; }),
@@ -4975,15 +5483,6 @@ var CreateProvisionDto = /** @class */ (function () {
         }),
         __metadata("design:type", String)
     ], CreateProvisionDto.prototype, "batchNo", void 0);
-    __decorate([
-        (0, class_transformer_1.Type)(function () { return dto_1.CreateBatchDto; }),
-        __metadata("design:type", typeof (_b = typeof dto_1.CreateBatchDto !== "undefined" && dto_1.CreateBatchDto) === "function" ? _b : Object)
-    ], CreateProvisionDto.prototype, "batch", void 0);
-    __decorate([
-        (0, class_validator_1.IsDefined)(),
-        (0, class_transformer_1.Type)(function () { return create_cardprovision_dto_1.CreateCardProvisionDto; }),
-        __metadata("design:type", Array)
-    ], CreateProvisionDto.prototype, "cardProvision", void 0);
     return CreateProvisionDto;
 }());
 exports.CreateProvisionDto = CreateProvisionDto;
@@ -5053,7 +5552,7 @@ var cardprovision_entity_1 = __webpack_require__(/*! ../../cardprovision/entitie
 var Provision = /** @class */ (function () {
     function Provision() {
     }
-    var _a, _b;
+    var _a, _b, _c, _d;
     __decorate([
         (0, typeorm_1.PrimaryGeneratedColumn)(),
         __metadata("design:type", Number)
@@ -5067,6 +5566,14 @@ var Provision = /** @class */ (function () {
         __metadata("design:type", String)
     ], Provision.prototype, "provisionedBy", void 0);
     __decorate([
+        (0, typeorm_1.Column)(),
+        __metadata("design:type", String)
+    ], Provision.prototype, "receivedBy", void 0);
+    __decorate([
+        (0, typeorm_1.Column)({ default: 0 }),
+        __metadata("design:type", Number)
+    ], Provision.prototype, "provisionStatus", void 0);
+    __decorate([
         (0, typeorm_1.OneToMany)(function () { return cardprovision_entity_1.CardProvision; }, function (cardProvision) { return cardProvision.provision; }, {
             cascade: true,
         }),
@@ -5077,9 +5584,17 @@ var Provision = /** @class */ (function () {
         __metadata("design:type", typeof (_a = typeof Date !== "undefined" && Date) === "function" ? _a : Object)
     ], Provision.prototype, "provisionedAt", void 0);
     __decorate([
-        (0, typeorm_1.ManyToOne)(function () { return entities_1.Batch; }),
+        (0, typeorm_1.ManyToOne)(function () { return entities_1.Receipt; }),
         __metadata("design:type", typeof (_b = typeof entities_1.Batch !== "undefined" && entities_1.Batch) === "function" ? _b : Object)
     ], Provision.prototype, "batch", void 0);
+    __decorate([
+        (0, typeorm_1.CreateDateColumn)(),
+        __metadata("design:type", typeof (_c = typeof Date !== "undefined" && Date) === "function" ? _c : Object)
+    ], Provision.prototype, "createdAt", void 0);
+    __decorate([
+        (0, typeorm_1.UpdateDateColumn)(),
+        __metadata("design:type", typeof (_d = typeof Date !== "undefined" && Date) === "function" ? _d : Object)
+    ], Provision.prototype, "updatedAt", void 0);
     Provision = __decorate([
         (0, typeorm_1.Entity)('provision')
     ], Provision);
@@ -5152,6 +5667,8 @@ var provision_service_1 = __webpack_require__(/*! ./provision.service */ "./apps
 var create_provision_dto_1 = __webpack_require__(/*! ./dto/create-provision.dto */ "./apps/batches/src/provision/dto/create-provision.dto.ts");
 var update_provision_dto_1 = __webpack_require__(/*! ./dto/update-provision.dto */ "./apps/batches/src/provision/dto/update-provision.dto.ts");
 var batch_service_1 = __webpack_require__(/*! ../batch/batch.service */ "./apps/batches/src/batch/batch.service.ts");
+var swagger_1 = __webpack_require__(/*! @nestjs/swagger */ "@nestjs/swagger");
+(0, swagger_1.ApiTags)('provision');
 var ProvisionController = /** @class */ (function () {
     function ProvisionController(provisionService, batchService) {
         this.provisionService = provisionService;
@@ -5163,17 +5680,39 @@ var ProvisionController = /** @class */ (function () {
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        _a.trys.push([0, 3, , 4]);
-                        return [4 /*yield*/, this.batchService.findOne(createProvisionDto.batchNo)];
+                        console.log(createProvisionDto, ' provisionn');
+                        _a.label = 1;
                     case 1:
+                        _a.trys.push([1, 4, , 5]);
+                        return [4 /*yield*/, this.batchService.findOne(createProvisionDto.batchNo)];
+                    case 2:
                         currentBatch = _a.sent();
                         createProvisionDto.batch = currentBatch;
                         return [4 /*yield*/, this.provisionService.createProvision(createProvisionDto)];
-                    case 2: return [2 /*return*/, _a.sent()];
-                    case 3:
+                    case 3: return [2 /*return*/, _a.sent()];
+                    case 4:
                         e_1 = _a.sent();
+                        // console.log(e);
                         throw new common_1.HttpException(e_1.message, common_1.HttpStatus.BAD_REQUEST);
-                    case 4: return [2 /*return*/];
+                    case 5: return [2 /*return*/];
+                }
+            });
+        });
+    };
+    ProvisionController.prototype.complete = function (id) {
+        return __awaiter(this, void 0, void 0, function () {
+            var e_2;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        _a.trys.push([0, 2, , 3]);
+                        return [4 /*yield*/, this.provisionService.complete(id)];
+                    case 1: return [2 /*return*/, _a.sent()];
+                    case 2:
+                        e_2 = _a.sent();
+                        // console.log(e);
+                        throw new common_1.HttpException(e_2.message, common_1.HttpStatus.BAD_REQUEST);
+                    case 3: return [2 /*return*/];
                 }
             });
         });
@@ -5182,6 +5721,7 @@ var ProvisionController = /** @class */ (function () {
         return this.provisionService.findAll(batchNo);
     };
     ProvisionController.prototype.findOne = function (id) {
+        // console.log("prq1:findOne")
         return this.provisionService.findOne(+id);
     };
     ProvisionController.prototype.search = function (batchNo, jobNo, lassraId, page, pageSize) {
@@ -5205,6 +5745,13 @@ var ProvisionController = /** @class */ (function () {
         __metadata("design:paramtypes", [typeof (_a = typeof create_provision_dto_1.CreateProvisionDto !== "undefined" && create_provision_dto_1.CreateProvisionDto) === "function" ? _a : Object]),
         __metadata("design:returntype", Promise)
     ], ProvisionController.prototype, "create", null);
+    __decorate([
+        (0, common_1.Patch)('complete/:id'),
+        __param(0, (0, common_1.Param)('id')),
+        __metadata("design:type", Function),
+        __metadata("design:paramtypes", [Number]),
+        __metadata("design:returntype", Promise)
+    ], ProvisionController.prototype, "complete", null);
     __decorate([
         (0, common_1.Get)(),
         __param(0, (0, common_1.Query)('batchNo')),
@@ -5379,63 +5926,71 @@ var ProvisionService = /** @class */ (function () {
     }
     ProvisionService.prototype.createProvision = function (createProvisionDto) {
         return __awaiter(this, void 0, void 0, function () {
-            var e_1;
-            var _this = this;
+            var newProvision, e_1;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        _a.trys.push([0, 2, , 3]);
-                        return [4 /*yield*/, this.dataSource.manager.transaction(function (transactionManager) { return __awaiter(_this, void 0, void 0, function () {
-                                var newProvision, _i, _a, card, cardtoUpdate;
-                                return __generator(this, function (_b) {
-                                    switch (_b.label) {
-                                        case 0:
-                                            newProvision = this.provisionRepository.create(createProvisionDto);
-                                            return [4 /*yield*/, transactionManager.save(newProvision)];
-                                        case 1:
-                                            _b.sent();
-                                            _i = 0, _a = createProvisionDto.cardProvision;
-                                            _b.label = 2;
-                                        case 2:
-                                            if (!(_i < _a.length)) return [3 /*break*/, 7];
-                                            card = _a[_i];
-                                            return [4 /*yield*/, this.cardRepository.findOne({
-                                                    where: { lassraId: card.lassraId },
-                                                })];
-                                        case 3:
-                                            cardtoUpdate = _b.sent();
-                                            if (cardtoUpdate.status < 1) {
-                                                throw new Error('Card has not been received');
-                                            }
-                                            if (!(cardtoUpdate && cardtoUpdate.status === 1)) return [3 /*break*/, 6];
-                                            return [4 /*yield*/, cardtoUpdate];
-                                        case 4:
-                                            (_b.sent()).status = 2;
-                                            return [4 /*yield*/, transactionManager.save(cardtoUpdate)];
-                                        case 5:
-                                            _b.sent();
-                                            _b.label = 6;
-                                        case 6:
-                                            _i++;
-                                            return [3 /*break*/, 2];
-                                        case 7: return [2 /*return*/, newProvision];
-                                    }
-                                });
-                            }); })];
+                        console.log(createProvisionDto, 'createProvision');
+                        _a.label = 1;
                     case 1:
-                        _a.sent();
-                        return [2 /*return*/, 'Provision created successfully'];
+                        _a.trys.push([1, 3, , 4]);
+                        newProvision = this.provisionRepository.create(createProvisionDto);
+                        return [4 /*yield*/, this.provisionRepository.save(newProvision)];
                     case 2:
+                        _a.sent();
+                        // for (const card of createProvisionDto.cardProvision) {
+                        //   const cardtoUpdate = await this.cardRepository.findOne({
+                        //     where: { lassraId: card.lassraId },
+                        //   });
+                        //   if (cardtoUpdate.status < 1) {
+                        //     throw new Error('Card has not been received');
+                        //   }
+                        //   if (cardtoUpdate && cardtoUpdate.status === 1) {
+                        //     (await cardtoUpdate).status = 2;
+                        //     await transactionManager.save(cardtoUpdate);
+                        //   }
+                        // }
+                        console.log(newProvision);
+                        return [2 /*return*/, newProvision];
+                    case 3:
                         e_1 = _a.sent();
-                        throw new Error(e_1.message);
-                    case 3: return [2 /*return*/];
+                        throw new Error(e_1.message + 'Service error');
+                    case 4: return [2 /*return*/];
+                }
+            });
+        });
+    };
+    ProvisionService.prototype.complete = function (id) {
+        return __awaiter(this, void 0, void 0, function () {
+            var provision, e_2;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        _a.trys.push([0, 3, , 4]);
+                        return [4 /*yield*/, this.provisionRepository.findOne({
+                                where: { id: id },
+                            })];
+                    case 1:
+                        provision = _a.sent();
+                        if (!provision) {
+                            throw new Error('Provision receipt not found');
+                        }
+                        provision.provisionStatus = 1;
+                        return [4 /*yield*/, this.provisionRepository.save(provision)];
+                    case 2:
+                        _a.sent();
+                        return [3 /*break*/, 4];
+                    case 3:
+                        e_2 = _a.sent();
+                        return [2 /*return*/, e_2];
+                    case 4: return [2 /*return*/];
                 }
             });
         });
     };
     ProvisionService.prototype.findAll = function (batchNo) {
         return __awaiter(this, void 0, void 0, function () {
-            var e_2;
+            var e_3;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -5449,8 +6004,8 @@ var ProvisionService = /** @class */ (function () {
                     case 3: return [2 /*return*/, _a.sent()];
                     case 4: return [3 /*break*/, 6];
                     case 5:
-                        e_2 = _a.sent();
-                        throw new Error(e_2.message);
+                        e_3 = _a.sent();
+                        throw new Error(e_3.message);
                     case 6: return [2 /*return*/];
                 }
             });
@@ -5458,7 +6013,7 @@ var ProvisionService = /** @class */ (function () {
     };
     ProvisionService.prototype.findOne = function (id) {
         return __awaiter(this, void 0, void 0, function () {
-            var provision, e_3;
+            var provision, e_4;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -5471,8 +6026,8 @@ var ProvisionService = /** @class */ (function () {
                         provision = _a.sent();
                         return [2 /*return*/, provision[0]];
                     case 2:
-                        e_3 = _a.sent();
-                        throw new Error(e_3);
+                        e_4 = _a.sent();
+                        throw new Error(e_4);
                     case 3: return [2 /*return*/];
                 }
             });
@@ -5480,7 +6035,7 @@ var ProvisionService = /** @class */ (function () {
     };
     ProvisionService.prototype.search = function (batchNo, jobNo, lassraId, page, pageSize) {
         return __awaiter(this, void 0, void 0, function () {
-            var provision, e_4;
+            var provision, e_5;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -5512,8 +6067,8 @@ var ProvisionService = /** @class */ (function () {
                         provision = _a.sent();
                         return [2 /*return*/, provision];
                     case 2:
-                        e_4 = _a.sent();
-                        throw new Error(e_4.message);
+                        e_5 = _a.sent();
+                        throw new Error(e_5.message);
                     case 3: return [2 /*return*/];
                 }
             });
@@ -5627,6 +6182,23 @@ var ReceiptController = /** @class */ (function () {
             });
         });
     };
+    ReceiptController.prototype.completeRequest = function (id) {
+        return __awaiter(this, void 0, void 0, function () {
+            var e_2;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        _a.trys.push([0, 2, , 3]);
+                        return [4 /*yield*/, this.receiptService.completedReceipt(id)];
+                    case 1: return [2 /*return*/, _a.sent()];
+                    case 2:
+                        e_2 = _a.sent();
+                        throw new common_1.HttpException(e_2.message, common_1.HttpStatus.BAD_REQUEST);
+                    case 3: return [2 /*return*/];
+                }
+            });
+        });
+    };
     ReceiptController.prototype.findAll = function (batchNo) {
         return this.receiptService.findAll(batchNo);
     };
@@ -5638,6 +6210,7 @@ var ReceiptController = /** @class */ (function () {
         return this.receiptService.search(batchNo, jobNo, lassraId, page, pageSize);
     };
     ReceiptController.prototype.findOne = function (id) {
+        // console.log('findOnehere')
         return this.receiptService.findOne(id);
     };
     ReceiptController.prototype.update = function (id, updateReceiptDto) {
@@ -5646,14 +6219,21 @@ var ReceiptController = /** @class */ (function () {
     ReceiptController.prototype.remove = function (id) {
         return this.receiptService.remove(+id);
     };
-    var _a, _b, _c, _d;
+    var _a, _b, _c;
     __decorate([
         (0, common_1.Post)(),
         __param(0, (0, common_1.Body)()),
         __metadata("design:type", Function),
-        __metadata("design:paramtypes", [typeof (_a = typeof dto_1.CreateReceiptDto !== "undefined" && dto_1.CreateReceiptDto) === "function" ? _a : Object]),
+        __metadata("design:paramtypes", [Object]),
         __metadata("design:returntype", Promise)
     ], ReceiptController.prototype, "createReceipt", null);
+    __decorate([
+        (0, common_1.Patch)('complete/:id'),
+        __param(0, (0, common_1.Param)('id')),
+        __metadata("design:type", Function),
+        __metadata("design:paramtypes", [Number]),
+        __metadata("design:returntype", Promise)
+    ], ReceiptController.prototype, "completeRequest", null);
     __decorate([
         (0, common_1.Get)(),
         __param(0, (0, common_1.Query)('batchNo')),
@@ -5684,7 +6264,7 @@ var ReceiptController = /** @class */ (function () {
         __param(0, (0, common_1.Param)('id')),
         __param(1, (0, common_1.Body)()),
         __metadata("design:type", Function),
-        __metadata("design:paramtypes", [String, typeof (_b = typeof dto_1.UpdateReceiptDto !== "undefined" && dto_1.UpdateReceiptDto) === "function" ? _b : Object]),
+        __metadata("design:paramtypes", [String, typeof (_a = typeof dto_1.UpdateReceiptDto !== "undefined" && dto_1.UpdateReceiptDto) === "function" ? _a : Object]),
         __metadata("design:returntype", void 0)
     ], ReceiptController.prototype, "update", null);
     __decorate([
@@ -5696,7 +6276,7 @@ var ReceiptController = /** @class */ (function () {
     ], ReceiptController.prototype, "remove", null);
     ReceiptController = __decorate([
         (0, common_1.Controller)('receipt'),
-        __metadata("design:paramtypes", [typeof (_c = typeof receipt_service_1.ReceiptService !== "undefined" && receipt_service_1.ReceiptService) === "function" ? _c : Object, typeof (_d = typeof batch_service_1.BatchService !== "undefined" && batch_service_1.BatchService) === "function" ? _d : Object])
+        __metadata("design:paramtypes", [typeof (_b = typeof receipt_service_1.ReceiptService !== "undefined" && receipt_service_1.ReceiptService) === "function" ? _b : Object, typeof (_c = typeof batch_service_1.BatchService !== "undefined" && batch_service_1.BatchService) === "function" ? _c : Object])
     ], ReceiptController);
     return ReceiptController;
 }());
@@ -5818,62 +6398,67 @@ var ReceiptService = /** @class */ (function () {
         this.cardRepository = cardRepository;
         this.dataSource = dataSource;
     }
+    // create receipt is now modified to create request without cards . Need to create add cards method to daad cards to a reaquest and a method to complete are request.
     ReceiptService.prototype.createReceipt = function (createReceiptDto) {
         return __awaiter(this, void 0, void 0, function () {
-            var queryBuilder, e_1;
-            var _this = this;
+            var newReceipt, e_1;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        _a.trys.push([0, 2, , 3]);
-                        return [4 /*yield*/, this.dataSource.manager.transaction(function (transactionManager) { return __awaiter(_this, void 0, void 0, function () {
-                                var newReceipt, _i, _a, card, cardtoUpdate;
-                                return __generator(this, function (_b) {
-                                    switch (_b.label) {
-                                        case 0:
-                                            newReceipt = this.receiptRepository.create(createReceiptDto);
-                                            return [4 /*yield*/, transactionManager.save(newReceipt)];
-                                        case 1:
-                                            _b.sent();
-                                            _i = 0, _a = createReceiptDto.cardReceipt;
-                                            _b.label = 2;
-                                        case 2:
-                                            if (!(_i < _a.length)) return [3 /*break*/, 7];
-                                            card = _a[_i];
-                                            return [4 /*yield*/, this.cardRepository.findOne({
-                                                    where: { lassraId: card.lassraId },
-                                                })];
-                                        case 3:
-                                            cardtoUpdate = _b.sent();
-                                            if (!cardtoUpdate) return [3 /*break*/, 6];
-                                            return [4 /*yield*/, cardtoUpdate];
-                                        case 4:
-                                            (_b.sent()).status = 1;
-                                            return [4 /*yield*/, transactionManager.save(cardtoUpdate)];
-                                        case 5:
-                                            _b.sent();
-                                            _b.label = 6;
-                                        case 6:
-                                            _i++;
-                                            return [3 /*break*/, 2];
-                                        case 7: return [2 /*return*/, newReceipt];
-                                    }
-                                });
-                            }); })];
+                        _a.trys.push([0, 3, , 4]);
+                        return [4 /*yield*/, this.receiptRepository.create(createReceiptDto)];
                     case 1:
-                        queryBuilder = _a.sent();
-                        return [2 /*return*/, 'Receipt created successfully'];
-                    case 2:
+                        newReceipt = _a.sent();
+                        console.log(newReceipt);
+                        return [4 /*yield*/, this.receiptRepository.save(newReceipt)];
+                    case 2: return [2 /*return*/, _a.sent()];
+                    case 3:
                         e_1 = _a.sent();
                         throw new Error(e_1.message);
-                    case 3: return [2 /*return*/];
+                    case 4: return [2 /*return*/];
                 }
+            });
+        });
+    };
+    ReceiptService.prototype.completedReceipt = function (id) {
+        return __awaiter(this, void 0, void 0, function () {
+            var receipt, e_2;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        _a.trys.push([0, 3, , 4]);
+                        return [4 /*yield*/, this.receiptRepository.findOne({
+                                where: { id: id },
+                            })];
+                    case 1:
+                        receipt = _a.sent();
+                        if (!receipt) {
+                            throw new Error("Cannot find receipt");
+                        }
+                        if (receipt.receivedStatus === 1) {
+                            throw new Error('Receipt already completed');
+                        }
+                        receipt.receivedStatus = 1;
+                        return [4 /*yield*/, this.receiptRepository.save(receipt)];
+                    case 2: return [2 /*return*/, _a.sent()];
+                    case 3:
+                        e_2 = _a.sent();
+                        throw new Error(e_2.message);
+                    case 4: return [2 /*return*/];
+                }
+            });
+        });
+    };
+    ReceiptService.prototype.addCard = function (batchNo, lassraId) {
+        return __awaiter(this, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                return [2 /*return*/];
             });
         });
     };
     ReceiptService.prototype.findAll = function (batchNo) {
         return __awaiter(this, void 0, void 0, function () {
-            var e_2;
+            var e_3;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -5887,8 +6472,8 @@ var ReceiptService = /** @class */ (function () {
                     case 3: return [2 /*return*/, _a.sent()];
                     case 4: return [3 /*break*/, 6];
                     case 5:
-                        e_2 = _a.sent();
-                        throw new Error(e_2);
+                        e_3 = _a.sent();
+                        throw new Error(e_3);
                     case 6: return [2 /*return*/];
                 }
             });
@@ -5896,7 +6481,7 @@ var ReceiptService = /** @class */ (function () {
     };
     ReceiptService.prototype.findOne = function (id) {
         return __awaiter(this, void 0, void 0, function () {
-            var receipts, e_3;
+            var receipts, e_4;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -5910,9 +6495,9 @@ var ReceiptService = /** @class */ (function () {
                         console.log(receipts);
                         return [2 /*return*/, receipts[0]];
                     case 2:
-                        e_3 = _a.sent();
-                        console.log(e_3);
-                        throw new Error(e_3);
+                        e_4 = _a.sent();
+                        console.log(e_4);
+                        throw new Error(e_4);
                     case 3: return [2 /*return*/];
                 }
             });
@@ -6505,18 +7090,11 @@ var RetrivalController = /** @class */ (function () {
             });
         });
     };
-    RetrivalController.prototype.requestDelivery = function (createRetrivalDto) {
-        return __awaiter(this, void 0, void 0, function () {
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0:
-                        console.log(createRetrivalDto, 'retrival controller');
-                        return [4 /*yield*/, this.retrivalService.requestDelivery(createRetrivalDto)];
-                    case 1: return [2 /*return*/, _a.sent()];
-                }
-            });
-        });
-    };
+    // @Post('delivery')
+    // async requestDelivery(@Body() createRetrivalDto: any) {
+    //   console.log(createRetrivalDto, 'retrival controller');
+    //   return await this.retrivalService.requestDelivery(createRetrivalDto);
+    // }
     RetrivalController.prototype.findAll = function () {
         return this.retrivalService.findAll();
     };
@@ -6537,13 +7115,6 @@ var RetrivalController = /** @class */ (function () {
         __metadata("design:paramtypes", [typeof (_a = typeof create_retrival_dto_1.CreateRetrivalDto !== "undefined" && create_retrival_dto_1.CreateRetrivalDto) === "function" ? _a : Object]),
         __metadata("design:returntype", Promise)
     ], RetrivalController.prototype, "create", null);
-    __decorate([
-        (0, common_1.Post)('delivery'),
-        __param(0, (0, common_1.Body)()),
-        __metadata("design:type", Function),
-        __metadata("design:paramtypes", [Object]),
-        __metadata("design:returntype", Promise)
-    ], RetrivalController.prototype, "requestDelivery", null);
     __decorate([
         (0, common_1.Get)(),
         __metadata("design:type", Function),
@@ -6606,7 +7177,7 @@ var typeorm_1 = __webpack_require__(/*! @nestjs/typeorm */ "@nestjs/typeorm");
 var retrival_entity_1 = __webpack_require__(/*! ./entities/retrival.entity */ "./apps/batches/src/retrival/entities/retrival.entity.ts");
 var location_entity_1 = __webpack_require__(/*! ../dispatch/entities/location.entity */ "./apps/batches/src/dispatch/entities/location.entity.ts");
 var cardRetrival_entity_1 = __webpack_require__(/*! ./entities/cardRetrival.entity */ "./apps/batches/src/retrival/entities/cardRetrival.entity.ts");
-var microservices_1 = __webpack_require__(/*! @nestjs/microservices */ "@nestjs/microservices");
+// import { ClientsModule, Transport } from '@nestjs/microservices';
 var RetrivalModule = /** @class */ (function () {
     function RetrivalModule() {
     }
@@ -6615,25 +7186,25 @@ var RetrivalModule = /** @class */ (function () {
             imports: [
                 common_2.DatabaseModule,
                 typeorm_1.TypeOrmModule.forFeature([retrival_entity_1.Retrival, cardRetrival_entity_1.CardRetrival, location_entity_1.CardLocation]),
-                microservices_1.ClientsModule.register([
-                    {
-                        name: 'WEBHOOK_SERVICE',
-                        transport: microservices_1.Transport.RMQ,
-                        options: {
-                            urls: [process.env.RABBIT_MQ_URI],
-                            queue: 'webhook',
-                            noAck: false,
-                            queueOptions: {
-                                durable: true,
-                                arguments: {
-                                    'x-message-ttl': 30 * 24 * 60 * 60 * 1000,
-                                    'x-dead-letter-exchange': '',
-                                    'x-dead-letter-routing-key': 'dead_letter_queue', // DLQ routing key
-                                },
-                            },
-                        },
-                    },
-                ]),
+                // ClientsModule.register([
+                //   {
+                //     name: 'WEBHOOK_SERVICE',
+                //     transport: Transport.RMQ,
+                //     options: {
+                //       urls: [process.env.RABBIT_MQ_URI],
+                //       queue: 'webhook',
+                //       noAck: false,
+                //       queueOptions: {
+                //         durable: true, // queue survives broker restart
+                //         arguments: {
+                //           'x-message-ttl': 30 * 24 * 60 * 60 * 1000, // 30 days TTL
+                //           'x-dead-letter-exchange': '', // Default exchange
+                //           'x-dead-letter-routing-key': 'dead_letter_queue', // DLQ routing key
+                //         },
+                //       },
+                //     },
+                //   },
+                // ]),
                 // SharedModule.registerRmq(
                 //   'WEBHOOK_SERVICE',
                 //   process.env.RABBIT_MQ_WEBHOOK_QUEUE,
@@ -6728,16 +7299,19 @@ var retrival_entity_1 = __webpack_require__(/*! ./entities/retrival.entity */ ".
 var location_entity_1 = __webpack_require__(/*! ../dispatch/entities/location.entity */ "./apps/batches/src/dispatch/entities/location.entity.ts");
 var cardRetrival_entity_1 = __webpack_require__(/*! ./entities/cardRetrival.entity */ "./apps/batches/src/retrival/entities/cardRetrival.entity.ts");
 // import { ProducerService } from '../procuder/producer.service';
-var microservices_1 = __webpack_require__(/*! @nestjs/microservices */ "@nestjs/microservices");
+// import {
+//   ClientProxy,
+//   ClientProxyFactory,
+//   Transport,
+// } from '@nestjs/microservices';
 var config_1 = __webpack_require__(/*! @nestjs/config */ "@nestjs/config");
 var RetrivalService = /** @class */ (function () {
     // private webhookClient: ClientProxy;
-    function RetrivalService(retrivalRepository, cardRetrivalRepository, cardLocationRepository, configService, webhookClient) {
+    function RetrivalService(retrivalRepository, cardRetrivalRepository, cardLocationRepository, configService) {
         this.retrivalRepository = retrivalRepository;
         this.cardRetrivalRepository = cardRetrivalRepository;
         this.cardLocationRepository = cardLocationRepository;
         this.configService = configService;
-        this.webhookClient = webhookClient;
         // this.webhookClient = ClientProxyFactory.create({
         //   transport: Transport.RMQ,
         //   options: {
@@ -6758,20 +7332,14 @@ var RetrivalService = /** @class */ (function () {
         //   },
         // });
     }
-    RetrivalService.prototype.requestDelivery = function (data) {
-        return __awaiter(this, void 0, void 0, function () {
-            return __generator(this, function (_a) {
-                console.log(data, 'retrival service');
-                try {
-                    this.webhookClient.emit({ cmd: 'relocation_request' }, data);
-                }
-                catch (e) {
-                    throw new Error(e);
-                }
-                return [2 /*return*/];
-            });
-        });
-    };
+    // async requestDelivery(data: any) {
+    //   console.log(data, 'retrival service');
+    //   try {
+    //     this.webhookClient.emit({ cmd: 'relocation_request' }, data);
+    //   } catch (e) {
+    //     throw new Error(e);
+    //   }
+    // }
     RetrivalService.prototype.create = function (createRetrivalDto) {
         return __awaiter(this, void 0, void 0, function () {
             var newRetrival, e_1;
@@ -6920,206 +7488,17 @@ var RetrivalService = /** @class */ (function () {
     RetrivalService.prototype.remove = function (id) {
         return "This action removes a #".concat(id, " retrival");
     };
-    var _a, _b, _c, _d, _e;
+    var _a, _b, _c, _d;
     RetrivalService = __decorate([
         (0, common_1.Injectable)(),
         __param(0, (0, typeorm_2.InjectRepository)(retrival_entity_1.Retrival)),
         __param(1, (0, typeorm_2.InjectRepository)(cardRetrival_entity_1.CardRetrival)),
         __param(2, (0, typeorm_2.InjectRepository)(location_entity_1.CardLocation)),
-        __param(4, (0, common_1.Inject)('WEBHOOK_SERVICE')),
-        __metadata("design:paramtypes", [typeof (_a = typeof typeorm_1.Repository !== "undefined" && typeorm_1.Repository) === "function" ? _a : Object, typeof (_b = typeof typeorm_1.Repository !== "undefined" && typeorm_1.Repository) === "function" ? _b : Object, typeof (_c = typeof typeorm_1.Repository !== "undefined" && typeorm_1.Repository) === "function" ? _c : Object, typeof (_d = typeof config_1.ConfigService !== "undefined" && config_1.ConfigService) === "function" ? _d : Object, typeof (_e = typeof microservices_1.ClientProxy !== "undefined" && microservices_1.ClientProxy) === "function" ? _e : Object])
+        __metadata("design:paramtypes", [typeof (_a = typeof typeorm_1.Repository !== "undefined" && typeorm_1.Repository) === "function" ? _a : Object, typeof (_b = typeof typeorm_1.Repository !== "undefined" && typeorm_1.Repository) === "function" ? _b : Object, typeof (_c = typeof typeorm_1.Repository !== "undefined" && typeorm_1.Repository) === "function" ? _c : Object, typeof (_d = typeof config_1.ConfigService !== "undefined" && config_1.ConfigService) === "function" ? _d : Object])
     ], RetrivalService);
     return RetrivalService;
 }());
 exports.RetrivalService = RetrivalService;
-
-
-/***/ }),
-
-/***/ "./libs/common/src/Rmq/index.ts":
-/*!**************************************!*\
-  !*** ./libs/common/src/Rmq/index.ts ***!
-  \**************************************/
-/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
-
-
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __exportStar = (this && this.__exportStar) || function(m, exports) {
-    for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
-};
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-__exportStar(__webpack_require__(/*! ./shared.service */ "./libs/common/src/Rmq/shared.service.ts"), exports);
-__exportStar(__webpack_require__(/*! ./shared.module */ "./libs/common/src/Rmq/shared.module.ts"), exports);
-
-
-/***/ }),
-
-/***/ "./libs/common/src/Rmq/shared.module.ts":
-/*!**********************************************!*\
-  !*** ./libs/common/src/Rmq/shared.module.ts ***!
-  \**********************************************/
-/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
-
-
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.SharedModule = void 0;
-var common_1 = __webpack_require__(/*! @nestjs/common */ "@nestjs/common");
-var config_1 = __webpack_require__(/*! @nestjs/config */ "@nestjs/config");
-var microservices_1 = __webpack_require__(/*! @nestjs/microservices */ "@nestjs/microservices");
-var shared_service_1 = __webpack_require__(/*! ./shared.service */ "./libs/common/src/Rmq/shared.service.ts");
-var SharedModule = /** @class */ (function () {
-    function SharedModule() {
-    }
-    SharedModule_1 = SharedModule;
-    SharedModule.registerRmq = function (service, queue) {
-        console.log(service, 'and', queue);
-        var providers = [
-            {
-                provide: service,
-                useFactory: function (configService) {
-                    var url = configService.get('RABBIT_MQ_URI');
-                    return microservices_1.ClientProxyFactory.create({
-                        transport: microservices_1.Transport.RMQ,
-                        options: {
-                            urls: [url],
-                            queue: queue,
-                            noAck: false,
-                            queueOptions: {
-                                durable: true,
-                                arguments: {
-                                    'x-message-ttl': 30 * 24 * 60 * 60 * 1000,
-                                    'x-dead-letter-exchange': '',
-                                    'x-dead-letter-routing-key': 'dead_letter_queue', // DLQ routing key
-                                },
-                            },
-                        },
-                    });
-                },
-                inject: [config_1.ConfigService],
-            },
-        ];
-        return {
-            module: SharedModule_1,
-            providers: providers,
-            exports: providers,
-        };
-    };
-    var SharedModule_1;
-    SharedModule = SharedModule_1 = __decorate([
-        (0, common_1.Module)({
-            imports: [
-                config_1.ConfigModule.forRoot({
-                    isGlobal: true,
-                    envFilePath: './.env',
-                }),
-            ],
-            providers: [shared_service_1.SharedService],
-            exports: [shared_service_1.SharedService],
-        })
-    ], SharedModule);
-    return SharedModule;
-}());
-exports.SharedModule = SharedModule;
-
-
-/***/ }),
-
-/***/ "./libs/common/src/Rmq/shared.service.ts":
-/*!***********************************************!*\
-  !*** ./libs/common/src/Rmq/shared.service.ts ***!
-  \***********************************************/
-/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
-
-
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.SharedService = void 0;
-var common_1 = __webpack_require__(/*! @nestjs/common */ "@nestjs/common");
-var config_1 = __webpack_require__(/*! @nestjs/config */ "@nestjs/config");
-var microservices_1 = __webpack_require__(/*! @nestjs/microservices */ "@nestjs/microservices");
-var SharedService = /** @class */ (function () {
-    function SharedService(configService) {
-        this.configService = configService;
-    }
-    SharedService.prototype.getRmqOptions = function (queue) {
-        console.log(queue, 'queue');
-        var url = this.configService.get('RABBIT_MQ_URI');
-        return {
-            transport: microservices_1.Transport.RMQ,
-            options: {
-                urls: [url],
-                noAck: false,
-                queue: queue,
-                prefetchCount: 1,
-                queueOptions: {
-                    durable: true,
-                    arguments: {
-                        'x-message-ttl': 30 * 24 * 60 * 60 * 1000,
-                        'x-dead-letter-exchange': '',
-                        'x-dead-letter-routing-key': 'dead_letter_queue', // DLQ routing key
-                    }
-                    // deadLetterExchange: 'dlx',
-                    // messageTtl: 60 * 60 * 1000, 
-                }
-            },
-        };
-    };
-    SharedService.prototype.acknowledgeMessage = function (context) {
-        var channel = context.getChannelRef();
-        var message = context.getMessage();
-        channel.ack(message);
-    };
-    var _a;
-    SharedService = __decorate([
-        (0, common_1.Injectable)(),
-        __metadata("design:paramtypes", [typeof (_a = typeof config_1.ConfigService !== "undefined" && config_1.ConfigService) === "function" ? _a : Object])
-    ], SharedService);
-    return SharedService;
-}());
-exports.SharedService = SharedService;
-
-
-/***/ }),
-
-/***/ "./libs/common/src/auth/index.ts":
-/*!***************************************!*\
-  !*** ./libs/common/src/auth/index.ts ***!
-  \***************************************/
-/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
-
-
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __exportStar = (this && this.__exportStar) || function(m, exports) {
-    for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
-};
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-__exportStar(__webpack_require__(/*! ./jwt-auth.guard */ "./libs/common/src/auth/jwt-auth.guard.ts"), exports);
 
 
 /***/ }),
@@ -7163,53 +7542,6 @@ var ResponseInterceptor = /** @class */ (function () {
     return ResponseInterceptor;
 }());
 exports.ResponseInterceptor = ResponseInterceptor;
-
-
-/***/ }),
-
-/***/ "./libs/common/src/auth/jwt-auth.guard.ts":
-/*!************************************************!*\
-  !*** ./libs/common/src/auth/jwt-auth.guard.ts ***!
-  \************************************************/
-/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
-
-
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-var __param = (this && this.__param) || function (paramIndex, decorator) {
-    return function (target, key) { decorator(target, key, paramIndex); }
-};
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.JwtAuthGuard = void 0;
-var common_1 = __webpack_require__(/*! @nestjs/common */ "@nestjs/common");
-var microservices_1 = __webpack_require__(/*! @nestjs/microservices */ "@nestjs/microservices");
-var JwtAuthGuard = /** @class */ (function () {
-    function JwtAuthGuard(authClient) {
-        this.authClient = authClient;
-    }
-    JwtAuthGuard.prototype.canActivate = function (context) {
-        var _a;
-        var jwt = (_a = context.switchToHttp().getRequest().cookies) === null || _a === void 0 ? void 0 : _a.Authentication;
-        if (!jwt) {
-            return false;
-        }
-    };
-    var _a;
-    JwtAuthGuard = __decorate([
-        (0, common_1.Injectable)(),
-        __param(0, (0, common_1.Inject)('AUTH_SERVICE')),
-        __metadata("design:paramtypes", [typeof (_a = typeof microservices_1.ClientProxy !== "undefined" && microservices_1.ClientProxy) === "function" ? _a : Object])
-    ], JwtAuthGuard);
-    return JwtAuthGuard;
-}());
-exports.JwtAuthGuard = JwtAuthGuard;
 
 
 /***/ }),
@@ -7318,8 +7650,8 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 __exportStar(__webpack_require__(/*! ./database */ "./libs/common/src/database/index.ts"), exports);
 __exportStar(__webpack_require__(/*! ./logger */ "./libs/common/src/logger/index.ts"), exports);
-__exportStar(__webpack_require__(/*! ./auth */ "./libs/common/src/auth/index.ts"), exports);
-__exportStar(__webpack_require__(/*! ./Rmq */ "./libs/common/src/Rmq/index.ts"), exports);
+// export * from './auth';
+// export * from './Rmq';
 
 
 /***/ }),
@@ -7498,13 +7830,13 @@ module.exports = require("@nestjs/mapped-types");
 
 /***/ }),
 
-/***/ "@nestjs/microservices":
-/*!****************************************!*\
-  !*** external "@nestjs/microservices" ***!
-  \****************************************/
+/***/ "@nestjs/schedule":
+/*!***********************************!*\
+  !*** external "@nestjs/schedule" ***!
+  \***********************************/
 /***/ ((module) => {
 
-module.exports = require("@nestjs/microservices");
+module.exports = require("@nestjs/schedule");
 
 /***/ }),
 
@@ -7605,6 +7937,16 @@ module.exports = require("rxjs/operators");
 /***/ ((module) => {
 
 module.exports = require("typeorm");
+
+/***/ }),
+
+/***/ "child_process":
+/*!********************************!*\
+  !*** external "child_process" ***!
+  \********************************/
+/***/ ((module) => {
+
+module.exports = require("child_process");
 
 /***/ })
 

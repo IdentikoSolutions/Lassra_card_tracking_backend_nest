@@ -18,13 +18,13 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CardLocation } from './entities/location.entity';
 import { Card } from '../entities';
-import {
-  Ctx,
-  EventPattern,
-  MessagePattern,
-  Payload,
-  RmqContext,
-} from '@nestjs/microservices';
+// import {
+//   Ctx,
+//   EventPattern,
+//   MessagePattern,
+//   Payload,
+//   RmqContext,
+// } from '@nestjs/microservices';
 
 @Controller('dispatch')
 export class DispatchController {
@@ -36,28 +36,28 @@ export class DispatchController {
     private readonly cardRepository: Repository<Card>,
   ) {}
   //Eventsaa
-  @EventPattern({ cmd: 'relocation_request' })
-  async UpdateCardRelocationStatus(
-    @Payload() data: any,
-    @Ctx() context: RmqContext,
-  ) {
-    const channel = context.getChannelRef();
-    const originalMsg = context.getMessage();
-    console.log(originalMsg, 'eventPattern');
+  // @EventPattern({ cmd: 'relocation_request' })
+  // async UpdateCardRelocationStatus(
+  //   @Payload() data: any,
+  //   @Ctx() context: RmqContext,
+  // ) {
+  //   const channel = context.getChannelRef();
+  //   const originalMsg = context.getMessage();
+  //   console.log(originalMsg, 'eventPattern');
 
-    try {
-      await this.dispatchService.UpdateCardRelocationStatus(data);
-      console.log('Executeed here');
-      // channel.ack(originalMsg);
-      console.log('Executeed here 3');
+  //   try {
+  //     await this.dispatchService.UpdateCardRelocationStatus(data);
+  //     console.log('Executeed here');
+  //     // channel.ack(originalMsg);
+  //     console.log('Executeed here 3');
 
-      return;
-    } catch (e) {
-      console.log(e, 'errrrrrrooooo');
-      // channel.nack(originalMsg, false, true);
-    }
-    //implement logic for updating relocation request
-  }
+  //     return;
+  //   } catch (e) {
+  //     console.log(e, 'errrrrrrooooo');
+  //     // channel.nack(originalMsg, false, true);
+  //   }
+  //   //implement logic for updating relocation request
+  // }
 
   @Post()
   create(@Body() createDispatchDto: CreateDispatchDto) {

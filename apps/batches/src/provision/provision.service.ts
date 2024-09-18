@@ -16,33 +16,46 @@ export class ProvisionService {
     private readonly dataSource: DataSource,
   ) {}
   async createProvision(createProvisionDto: CreateProvisionDto) {
-    // console.log(createProvisionDto, 'createProvision');
+    console.log(createProvisionDto, 'createProvision');
     try {
-      await this.dataSource.manager.transaction(async (transactionManager) => {
-        const newProvision =
-          this.provisionRepository.create(createProvisionDto);
+      // await this.dataSource.manager.transaction(async (transactionManager) => {
+      const newProvision = this.provisionRepository.create(createProvisionDto);
 
-        await transactionManager.save(newProvision);
-        for (const card of createProvisionDto.cardProvision) {
-          const cardtoUpdate = await this.cardRepository.findOne({
-            where: { lassraId: card.lassraId },
-          });
-          if (cardtoUpdate.status < 1) {
-            throw new Error('Card has not been received');
-          }
-          if (cardtoUpdate && cardtoUpdate.status === 1) {
-            (await cardtoUpdate).status = 2;
-            await transactionManager.save(cardtoUpdate);
-          }
-        }
-        return newProvision;
-      });
-      return 'Provision created successfully';
+      await this.provisionRepository.save(newProvision);
+      // for (const card of createProvisionDto.cardProvision) {
+      //   const cardtoUpdate = await this.cardRepository.findOne({
+      //     where: { lassraId: card.lassraId },
+      //   });
+      //   if (cardtoUpdate.status < 1) {
+      //     throw new Error('Card has not been received');
+      //   }
+      //   if (cardtoUpdate && cardtoUpdate.status === 1) {
+      //     (await cardtoUpdate).status = 2;
+      //     await transactionManager.save(cardtoUpdate);
+      //   }
+      // }
+      console.log(newProvision);
+      return newProvision;
+      // });
+      // return 'Provision created successfully';
     } catch (e) {
-      throw new Error(e.message);
+      throw new Error(e.message + 'Service error');
     }
   }
-
+  async complete(id: number) {
+    try {
+      const provision = await this.provisionRepository.findOne({
+        where: { id },
+      });
+      if (!provision) {
+        throw new Error('Provision receipt not found');
+      }
+      provision.provisionStatus = 1;
+      await this.provisionRepository.save(provision);
+    } catch (e) {
+      return e;
+    }
+  }
   async findAll(batchNo: string) {
     try {
       if (batchNo) {

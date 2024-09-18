@@ -42,6 +42,7 @@ export class BatchController {
         throw new Error('Database already seeded');
       }
       const result = await Axios.get('/Batch/GetValidBatches');
+      console.log(result, '=result');
       const resultModified = await Promise.allSettled(
         result.data.map(async (item) => {
           item.cards = await (

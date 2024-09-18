@@ -24,6 +24,7 @@ export class DeliveryController {
     private readonly cardService: CardService,
   ) {}
   @Post('collect')
+  //This endpoint is used to mark the status of card as collected.
   async collectCard(@Body() body: { lassraId: string }, @Res() res: Response) {
     const result = await this.cardService.findOne(body.lassraId);
     if (!result) {
@@ -51,12 +52,12 @@ export class DeliveryController {
     res.status(200).send('Card collection updated successfully');
   }
   @Get('filter')
+  //This endpoint is used to filter or search for delivery others by status,start date and end date range.
   async filterDeliveryOrders(
     @Query('status') status?: string,
     @Query('start') start?: string,
     @Query('end') end?: string,
   ) {
-    // console.log('START', start, end, 'END', status, 'STATS');
     const args = [undefined, undefined, undefined];
     if (status) {
       args[0] = parseInt(status);
@@ -69,11 +70,13 @@ export class DeliveryController {
     }
     return await this.deliveryService.findDeliveryByStatus(...args);
   }
-  @Get() // get delivery all delivery request. if a query 'created' is added it get request by status true/false true for delivery order created and false for not created.
+  @Get() // get delivery all delivery request. if a query 'created' is added it get 
+  //request by status true/false true for delivery order created and false for not created.
   getRequest(@Query('created') created: string) {
     return this.deliveryService.getRequestForDelivery(created);
   }
   @Post()
+  //This endpoint create a new delivery order
   create(@Body() createDeliveryDto: CreateDeliveryDto[]) {
     return this.deliveryService.create(createDeliveryDto);
   }
@@ -106,7 +109,7 @@ export class DeliveryController {
   }
   @Patch('batch-update')
   updateMany(@Body() updateDeliveryDto: any[]) {
-    console.log('updateMany');
+    // console.log('updateMany');
     return this.deliveryService.updateMany(updateDeliveryDto);
   }
 

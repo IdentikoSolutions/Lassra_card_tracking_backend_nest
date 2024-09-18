@@ -20,12 +20,12 @@ export class RetrivalController {
     return await this.retrivalService.create(createRetrivalDto);
   }
 
-  @Post('delivery')
-  async requestDelivery(@Body() createRetrivalDto: any) {
-    console.log(createRetrivalDto, 'retrival controller');
+  // @Post('delivery')
+  // async requestDelivery(@Body() createRetrivalDto: any) {
+  //   console.log(createRetrivalDto, 'retrival controller');
 
-    return await this.retrivalService.requestDelivery(createRetrivalDto);
-  }
+  //   return await this.retrivalService.requestDelivery(createRetrivalDto);
+  // }
 
   @Get()
   findAll() {

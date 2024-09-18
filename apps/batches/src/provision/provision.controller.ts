@@ -15,7 +15,8 @@ import { CreateProvisionDto } from './dto/create-provision.dto';
 import { UpdateProvisionDto } from './dto/update-provision.dto';
 import { BatchService } from '../batch/batch.service';
 import { CreateBatchDto } from '../dto';
-
+import { ApiTags } from '@nestjs/swagger';
+ApiTags('provision');
 @Controller('provision')
 export class ProvisionController {
   constructor(
@@ -25,6 +26,7 @@ export class ProvisionController {
 
   @Post()
   async create(@Body() createProvisionDto: CreateProvisionDto) {
+    console.log(createProvisionDto, ' provisionn');
     try {
       const currentBatch = await this.batchService.findOne(
         createProvisionDto.batchNo,
@@ -35,6 +37,17 @@ export class ProvisionController {
       >;
       return await this.provisionService.createProvision(createProvisionDto);
     } catch (e) {
+      // console.log(e);
+      throw new HttpException(e.message, HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  @Patch('complete/:id')
+  async complete(@Param('id') id: number) {
+    try {
+      return await this.provisionService.complete(id);
+    } catch (e) {
+      // console.log(e);
       throw new HttpException(e.message, HttpStatus.BAD_REQUEST);
     }
   }
@@ -46,6 +59,7 @@ export class ProvisionController {
 
   @Get(':id')
   findOne(@Param('id') id: string) {
+    // console.log("prq1:findOne")
     return this.provisionService.findOne(+id);
   }
 

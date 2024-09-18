@@ -1,7 +1,7 @@
 import { Module, forwardRef } from '@nestjs/common';
 import { AppService } from './app.service';
 import { AppController } from './app.controller';
-import { LoggerModule, SharedModule } from '@app/common';
+import { LoggerModule } from '@app/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Batch, Receipt, Card, CardReceipt } from './entities';
 import { ConfigModule, ConfigService } from '@nestjs/config';
@@ -16,6 +16,10 @@ import { CardprovisionModule } from './cardprovision/cardprovision.module';
 import { DispatchModule } from './dispatch/dispatch.module';
 import { RetrivalModule } from './retrival/retrival.module';
 import { DeliveryModule } from './delivery/delivery.module';
+import { BackupModule } from './backup/backup.module';
+import { BackupCron } from './backup/backup.cron';
+import { BackupService } from './backup/backup.service';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
@@ -26,11 +30,7 @@ import { DeliveryModule } from './delivery/delivery.module';
     ConfigModule.forRoot({
       isGlobal: true,
     }),
-    // SharedModule.registerRmq(
-    //   'WEBHOOK_SERVICE',
-    //   process.env.RABBIT_MQ_WEBHOOK_QUEUE,
-    // ),
-    // WebhooksModule,
+    ScheduleModule.forRoot(),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => ({
@@ -43,7 +43,6 @@ import { DeliveryModule } from './delivery/delivery.module';
         entities: [__dirname + '/**/*.entity{.ts,.js}'],
         autoLoadEntities: true,
         synchronize: true,
-        // logging: true,
       }),
       inject: [ConfigService],
     }),
@@ -57,11 +56,14 @@ import { DeliveryModule } from './delivery/delivery.module';
     DispatchModule,
     RetrivalModule,
     DeliveryModule,
+    BackupModule,
   ],
   controllers: [AppController],
   providers: [
     AppService,
     ConfigService,
+    // BackupCron,
+    BackupService,
     // RmqService,
     // { provide: 'WEBHOOK_SERVICE', useValue: RmqService },
 

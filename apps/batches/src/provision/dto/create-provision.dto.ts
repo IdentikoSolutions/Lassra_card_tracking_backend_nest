@@ -17,6 +17,12 @@ export class CreateProvisionDto {
     required: true,
   })
   provisionedBy: string;
+  @IsString()
+  @ApiProperty({
+    example: 'Jome',
+    required: true,
+  })
+  receivedBy: string;
 
   @IsDate()
   @Type(() => Date)
@@ -35,11 +41,11 @@ export class CreateProvisionDto {
   })
   batchNo: string;
 
-  @Type(() => CreateBatchDto)
-  batch?: CreateBatchDto;
+  // @Type(() => CreateBatchDto)
+  // batch?: CreateBatchDto;
 
 
-  @IsDefined()
-  @Type(() => CreateCardProvisionDto)
-  cardProvision: CreateCardProvisionDto[];
+  // @IsDefined()
+  // @Type(() => CreateCardProvisionDto)
+  // cardProvision: CreateCardProvisionDto[];
 }

@@ -1,12 +1,14 @@
 import {
   Controller,
   Get,
-  // Post,
-  // Body,
+  Post,
+  Body,
   // Patch,
   // Param,
   // Delete,
   Query,
+  HttpException,
+  HttpStatus,
 } from '@nestjs/common';
 import { CardReceiptService } from './cardreceipt.service';
 // import { CreateCardReceiptDto } from '../dto/create-cardreceipt.dto';
@@ -16,10 +18,15 @@ import { CardReceiptService } from './cardreceipt.service';
 export class CardReceiptController {
   constructor(private readonly cardReceiptService: CardReceiptService) {}
 
-  // @Post()
-  // create(@Body() createCardReceiptDto: CreateCardReceiptDto) {
-  //   return this.cardReceiptService.create(createCardReceiptDto);
-  // }
+  @Post()
+  async create(@Body() body: { lassraId: string; receiptId: number }) {
+    try {
+      const { lassraId, receiptId } = body;
+      return await this.cardReceiptService.create(lassraId, receiptId);
+    } catch (e: any) {
+      throw new HttpException(e.message, HttpStatus.BAD_REQUEST);
+    }
+  }
 
   @Get()
   async findAll(@Query('receipt_id') receipt_id: number) {

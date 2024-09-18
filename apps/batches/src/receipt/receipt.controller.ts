@@ -24,7 +24,8 @@ export class ReceiptController {
   ) {}
 
   @Post()
-  async createReceipt(@Body() createReceiptDto: CreateReceiptDto) {
+  async createReceipt(@Body() createReceiptDto: any) {
+    // console.log(createReceiptDto, 'create');
     try {
       const currentBatch = await this.batchService.findOne(
         createReceiptDto.batchNo,
@@ -39,7 +40,14 @@ export class ReceiptController {
       throw new HttpException(e.message, HttpStatus.BAD_REQUEST);
     }
   }
-
+  @Patch('complete/:id')
+  async completeRequest(@Param('id') id: number) {
+    try {
+      return await this.receiptService.completedReceipt(id);
+    } catch (e) {
+      throw new HttpException(e.message, HttpStatus.BAD_REQUEST);
+    }
+  }
   @Get()
   findAll(@Query('batchNo') batchNo: string) {
     return this.receiptService.findAll(batchNo);
@@ -62,6 +70,7 @@ export class ReceiptController {
 
   @Get(':id')
   findOne(@Param('id') id: string) {
+    // console.log('findOnehere')
     return this.receiptService.findOne(id);
   }
 

@@ -18,7 +18,7 @@ import { ConfirmChannel } from 'amqplib';
 import { CardRepository } from '../repository/card.repository';
 import { Card } from '../entities';
 import { DataSource } from 'typeorm';
-import { Ctx, EventPattern, Payload, RmqContext } from '@nestjs/microservices';
+// import { Ctx, EventPattern, Payload, RmqContext } from '@nestjs/microservices';
 
 @Injectable()
 export class DispatchService {
@@ -34,32 +34,9 @@ export class DispatchService {
     @InjectRepository(CardLocation)
     private readonly cardLocationRepository: Repository<CardLocation>,
     private readonly dataSource: DataSource,
-  ) {
-    // const connection = amqp.connect(['amqp://localhost']);
-    // this.channelWrapper = connection.createChannel();
-  }
+  ) {}
 
-  // public async onModuleInit() {
-  //   try {
-  //     await this.channelWrapper.addSetup(async (channel: ConfirmChannel) => {
-  //       await channel.assertQueue('webhook', { durable: true });
-  //       await channel.consume('webhook', async (message) => {
-  //         if (message) {
-  //           const content = JSON.parse(message.content.toString());
-  //           this.logger.log('Received message:', content);
-  //           // await this.emailService.sendEmail(content);
-  //           // channel.ack(message);
-  //         }
-  //       });
-  //     });
-  //     // this.logger.log('Consumer service started and listening for messages.');
-  //   } catch (err) {
-  //     this.logger.error('Error starting the consumer:', err);
-  //   }
-  // }
   async UpdateCardRelocationStatus(data: any) {
-    console.log(data, 'dispathc  service');
-
     try {
       const reqCard = await this.cardLocationRepository.findOneBy({
         lassraId: data.lassraId,
@@ -164,6 +141,7 @@ export class DispatchService {
               if (newLocation) {
                 newLocation.currentLocation = newLocation.collectionCenter;
                 await this.cardLocationRepository.save(newLocation);
+                //*********Dispatch a message to external service to announce the new location of the card
               } else {
                 throw new Error('card location detail not found');
               }
@@ -173,7 +151,7 @@ export class DispatchService {
             }
           });
           const updated = await this.dispatchRepository.save(dispatchToUpdate);
-          console.log(updated);
+          // console.log(updated);
           await transactionManager.save(updated);
         },
       );
@@ -184,7 +162,7 @@ export class DispatchService {
   }
   // (4)
   async findAll() {
-    console.log('rom findALL');
+    // console.log('rom findALL');
     try {
       return await this.dispatchRepository.find({});
     } catch (e) {
@@ -198,7 +176,7 @@ export class DispatchService {
         id,
       },
     });
-    console.log(dispatch);
+    // console.log(dispatch);
     try {
       if (dispatch) {
         return await this.cardDispatchRepository.find({
@@ -206,7 +184,7 @@ export class DispatchService {
         });
       }
     } catch (e) {
-      throw new Error('this is my err' + e.message);
+      throw new Error('Error: ' + e.message);
     }
   }
   // (6)

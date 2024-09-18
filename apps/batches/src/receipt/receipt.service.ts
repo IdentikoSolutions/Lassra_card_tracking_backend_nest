@@ -15,40 +15,36 @@ export class ReceiptService {
     private readonly cardRepository: CardRepository,
     private readonly dataSource: DataSource,
   ) {}
+  // create receipt is now modified to create request without cards . Need to create add cards method to daad cards to a reaquest and a method to complete are request.
   async createReceipt(createReceiptDto: CreateReceiptDto) {
-    // console.log(createReceiptDto, 'createReceipt');
     try {
-      const queryBuilder = await this.dataSource.manager.transaction(
-        async (transactionManager) => {
-          const newReceipt = this.receiptRepository.create(createReceiptDto);
-
-          await transactionManager.save(newReceipt);
-          for (const card of createReceiptDto.cardReceipt) {
-            const cardtoUpdate = await this.cardRepository.findOne({
-              where: { lassraId: card.lassraId },
-            });
-            if (cardtoUpdate) {
-              (await cardtoUpdate).status = 1;
-              await transactionManager.save(cardtoUpdate);
-            }
-          }
-          return newReceipt;
-        },
-      );
-      return 'Receipt created successfully';
+      const newReceipt = await this.receiptRepository.create(createReceiptDto);
+      console.log(newReceipt);
+      return await this.receiptRepository.save(newReceipt);
     } catch (e) {
       throw new Error(e.message);
     }
-
-    // try {
-    //   const newReceipt = this.receiptRepository.create(createReceiptDto);
-    //   return await this.receiptRepository.save(newReceipt);
-    // } catch (err) {
-    //   throw new Error(err);
-    // }
-    // return 'This action adds a new card';
   }
-
+  async completedReceipt(id: number) {
+    try {
+      const receipt = await this.receiptRepository.findOne({
+        where: { id },
+      });
+      if (!receipt) {
+        throw new Error(`Cannot find receipt`);
+      }
+      if (receipt.receivedStatus === 1) {
+        throw new Error('Receipt already completed');
+      }
+      receipt.receivedStatus = 1;
+      return await this.receiptRepository.save(receipt);
+    } catch (e) {
+      throw new Error(e.message);
+    }
+  }
+  async addCard(batchNo: number, lassraId: string) {
+    //check in cardReceipt service
+  }
   async findAll(batchNo: string) {
     try {
       if (batchNo) {

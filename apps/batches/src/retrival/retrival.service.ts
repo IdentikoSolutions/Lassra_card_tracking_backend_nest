@@ -13,11 +13,11 @@ import { Retrival } from './entities/retrival.entity';
 import { CardLocation } from '../dispatch/entities/location.entity';
 import { CardRetrival } from './entities/cardRetrival.entity';
 // import { ProducerService } from '../procuder/producer.service';
-import {
-  ClientProxy,
-  ClientProxyFactory,
-  Transport,
-} from '@nestjs/microservices';
+// import {
+//   ClientProxy,
+//   ClientProxyFactory,
+//   Transport,
+// } from '@nestjs/microservices';
 import { ConfigService } from '@nestjs/config';
 
 @Injectable()
@@ -30,8 +30,7 @@ export class RetrivalService {
     private readonly cardRetrivalRepository: Repository<CardRetrival>,
     @InjectRepository(CardLocation)
     private readonly cardLocationRepository: Repository<CardLocation>,
-    private configService: ConfigService,
-    @Inject('WEBHOOK_SERVICE') private readonly webhookClient: ClientProxy,
+    private configService: ConfigService, // @Inject('WEBHOOK_SERVICE') private readonly webhookClient: ClientProxy,
   ) {
     // this.webhookClient = ClientProxyFactory.create({
     //   transport: Transport.RMQ,
@@ -53,15 +52,15 @@ export class RetrivalService {
     //   },
     // });
   }
-  async requestDelivery(data: any) {
-    console.log(data, 'retrival service');
+  // async requestDelivery(data: any) {
+  //   console.log(data, 'retrival service');
 
-    try {
-      this.webhookClient.emit({ cmd: 'relocation_request' }, data);
-    } catch (e) {
-      throw new Error(e);
-    }
-  }
+  //   try {
+  //     this.webhookClient.emit({ cmd: 'relocation_request' }, data);
+  //   } catch (e) {
+  //     throw new Error(e);
+  //   }
+  // }
 
   async create(createRetrivalDto: CreateRetrivalDto) {
     try {

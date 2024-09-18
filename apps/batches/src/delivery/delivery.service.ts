@@ -45,7 +45,7 @@ export class DeliveryService {
       .getMany();
   }
 
-  private async isDeliveryOrdered(lassraId: string) {
+  private async isDeliveryOrderCreated(lassraId: string) {
     const isdeliveryorderCreated = await this.deliveryRepository.findOne({
       where: { lassraId },
     });
@@ -57,7 +57,7 @@ export class DeliveryService {
     const cards = await this.getAllCardLocationsWithRequestedDelivery();
     const result = await Promise.all(
       cards.map(async (card) => {
-        const isOrdered = await this.isDeliveryOrdered(card.lassraId);
+        const isOrdered = await this.isDeliveryOrderCreated(card.lassraId);
         return isOrdered ? card : null;
       }),
     );
@@ -70,7 +70,7 @@ export class DeliveryService {
 
     const result = await Promise.all(
       cards.map(async (card) => {
-        const isOrdered = await this.isDeliveryOrdered(card.lassraId);
+        const isOrdered = await this.isDeliveryOrderCreated(card.lassraId);
         return isOrdered ? null : card;
       }),
     );
@@ -208,6 +208,7 @@ export class DeliveryService {
           await transactionManager.save(this.cardRepository.target, card);
         },
       );
+      //******Dispatch a message to the external service to update the card status
       return 'Card delivered and received successfully';
     } catch (err) {
       throw new Error(err);

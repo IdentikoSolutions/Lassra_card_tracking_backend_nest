@@ -3,7 +3,6 @@ import {
   Column,
   PrimaryGeneratedColumn,
   ManyToOne,
-  BaseEntity,
   OneToMany,
 } from 'typeorm';
 import { Batch } from './batch.entity';
@@ -18,7 +17,7 @@ export class Receipt {
   batchNo: string;
 
   @Column({ default: 0 })
-  receivedStatus?: number;
+  receivedStatus?: number; // 0=initiated,1 created
 
   @Column()
   receivedBy?: string;

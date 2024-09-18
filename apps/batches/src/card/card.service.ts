@@ -5,7 +5,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Card } from '../entities';
 import { CardRepository } from '../repository';
 import { CardLocation } from '../dispatch/entities/location.entity';
-import { Repository } from 'typeorm';
+import { Not, Repository } from 'typeorm';
 
 @Injectable()
 export class CardService {
@@ -14,9 +14,6 @@ export class CardService {
     @InjectRepository(CardLocation)
     private readonly cardLocationRepository: Repository<CardLocation>,
   ) {}
-  // create(createCardDto: CreateCardDto) {
-  //   return 'This action adds a new card';
-  // }
   //get all the card or get all cards for a batch when you supply batchNo as queryParam
   async findAll(batchNo: string) {
     try {
@@ -33,15 +30,12 @@ export class CardService {
       throw new Error(e);
     }
   }
+  //this method is called by external service to update card location information
   async relocationRequest(lassraId: string, newLocation: string) {
-    console.log('Here 1');
-
     try {
       const cardToReloc = await this.cardLocationRepository.findOne({
         where: { lassraId: lassraId },
       });
-      // console.log('Here 2', cardToReloc);
-
       if (!cardToReloc) {
         throw new NotFoundException('user not found');
       }
@@ -57,6 +51,23 @@ export class CardService {
       // console.log('Catcg error', e);
 
       throw new Error('Requested could nt be completed');
+    }
+  }
+  async requestDelivery(lassraId: string) {
+    try {
+      const cardToDeliver = await this.cardLocationRepository.findOne({
+        where: { lassraId: lassraId },
+      });
+      if (!cardToDeliver) {
+        throw new NotFoundException('User not found');
+      }
+      if (cardToDeliver.requestedDelivery === true) {
+        return;
+      }
+      cardToDeliver.requestedDelivery = true;
+      return await this.cardLocationRepository.save(cardToDeliver);
+    } catch (err) {
+      throw new Error(err.message);
     }
   }
   async getCardForRetrivalByCollectionCenter(currentLocation: string) {

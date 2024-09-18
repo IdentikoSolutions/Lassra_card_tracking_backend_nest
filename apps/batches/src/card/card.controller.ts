@@ -14,7 +14,7 @@ import {
 } from '@nestjs/common';
 import { CardService } from './card.service';
 import { CreateCardDto, UpdateCardDto } from '../dto';
-import { EventPattern, Payload } from '@nestjs/microservices';
+// import { EventPattern, Payload } from '@nestjs/microservices';
 import { Response } from 'express';
 
 @Controller('card')
@@ -42,10 +42,10 @@ export class CardController {
     }
   }
 
-  @EventPattern('card_created')
-  async CreateCard(@Payload() data: CreateCardDto) {
-    console.log('This will create a card');
-  }
+  // @EventPattern('card_created')
+  // async CreateCard(@Payload() data: CreateCardDto) {
+  //   console.log('This will create a card');
+  // }
   @Get()
   findAll(@Query('batchNo') batchNo?: string) {
     console.log('called');
@@ -77,13 +77,20 @@ export class CardController {
   update(@Param('id') id: string, @Body() updateCardDto: UpdateCardDto) {
     return this.cardService.update(+id, updateCardDto);
   }
+  //this endpoint is called by external service to update card location information when a fresident request relocation.
   @Post('relocation')
   async relocateCard(
     @Query('lassraId') lassraId: string,
     @Query('newLocation') newLocation: string,
   ) {
-    console.log(lassraId, newLocation);
     return await this.cardService.relocationRequest(lassraId, newLocation);
+  }
+  @Post('request_delivery')
+  async requestDeliveryCard(
+    @Query('lassraId') lassraId: string,
+    // @Query('newLocation') newLocation: string,
+  ) {
+    return await this.cardService.requestDelivery(lassraId);
   }
   @Delete(':id')
   remove(@Param('id') id: string) {

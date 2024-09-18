@@ -5,7 +5,7 @@ import { ConfigService } from '@nestjs/config';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 // import { SharedService } from '@app/common';
-import { RmqOptions, Transport } from '@nestjs/microservices';
+// import { RmqOptions, Transport } from '@nestjs/microservices';
 import { ResponseInterceptor } from 'libs/common/src/auth/interceptors/response.interceptors';
 
 async function bootstrap() {
