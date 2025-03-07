@@ -10,16 +10,16 @@ import { CardReceiptModule } from './cardreceipt/cardreceipt.module';
 import { ReceiptModule } from './receipt/receipt.module';
 import { BatchModule } from './batch/batch.module';
 import { DevtoolsModule } from '@nestjs/devtools-integration';
-// import { CorsModule } from '@nestjs/platform-express';
 import { ProvisionModule } from './provision/provision.module';
 import { CardprovisionModule } from './cardprovision/cardprovision.module';
 import { DispatchModule } from './dispatch/dispatch.module';
 import { RetrivalModule } from './retrival/retrival.module';
 import { DeliveryModule } from './delivery/delivery.module';
 import { BackupModule } from './backup/backup.module';
-import { BackupCron } from './backup/backup.cron';
 import { BackupService } from './backup/backup.service';
 import { ScheduleModule } from '@nestjs/schedule';
+import { UsersModule } from './users/users.module';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -34,12 +34,19 @@ import { ScheduleModule } from '@nestjs/schedule';
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => ({
-        type: 'postgres',
-        host: configService.get('POSTGRES_HOST'),
-        port: parseInt(configService.get('POSTGRES_PORT')), // Convert string to number
-        username: configService.get('POSTGRES_USER'),
-        password: configService.get('POSTGRES_PASSWORD'),
-        database: configService.get('POSTGRES_DATABASE'),
+        type: 'mssql',
+        host: configService.get('SQL_SERVER_HOST'),
+        port: parseInt(configService.get('SQL_SERVER_PORT')), // Convert string to number
+        username: configService.get('SQL_SERVER_USERNAME'),
+        password: configService.get('SQL_SERVER_PASSWORD'),
+        database: configService.get('SQL_SERVER_DATABASE'),
+
+        // type: 'postgres',
+        // host: configService.get('POSTGRES_HOST'),
+        // port: parseInt(configService.get('POSTGRES_PORT')), // Convert string to number
+        // username: configService.get('POSTGRES_USER'),
+        // password: configService.get('POSTGRES_PASSWORD'),
+        // database: configService.get('POSTGRES_DATABASE'),
         entities: [__dirname + '/**/*.entity{.ts,.js}'],
         autoLoadEntities: true,
         synchronize: true,
@@ -57,21 +64,11 @@ import { ScheduleModule } from '@nestjs/schedule';
     RetrivalModule,
     DeliveryModule,
     BackupModule,
+    AuthModule,
+    UsersModule,
   ],
   controllers: [AppController],
-  providers: [
-    AppService,
-    ConfigService,
-    // BackupCron,
-    BackupService,
-    // RmqService,
-    // { provide: 'WEBHOOK_SERVICE', useValue: RmqService },
-
-    // {
-    //   provide: APP_FILTER,
-    //   useClass: HttpExceptionFilter,
-    // },
-  ],
+  providers: [AppService, ConfigService, BackupService],
   exports: [ConfigService],
 })
 export class AppModule {}

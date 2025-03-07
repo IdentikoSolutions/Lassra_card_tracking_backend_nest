@@ -44,11 +44,9 @@ export class CardService {
       }
       cardToReloc.requestedRelocation = true;
       cardToReloc.collectionCenter = newLocation;
-      // console.log('Here 3', cardToReloc);
 
       return await this.cardLocationRepository.save(cardToReloc);
     } catch (e) {
-      // console.log('Catcg error', e);
 
       throw new Error('Requested could nt be completed');
     }
@@ -137,9 +135,6 @@ export class CardService {
     return await this.cardRepository.save(updated);
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} card`;
-  }
   async getAllCardForRetrival() {
     const queryBuilder =
       this.cardLocationRepository.createQueryBuilder('cardLocation');

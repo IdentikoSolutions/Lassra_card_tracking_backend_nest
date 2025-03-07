@@ -5,14 +5,12 @@ import {
   Body,
   Patch,
   Param,
-  Delete,
   HttpException,
   HttpStatus,
   Query,
 } from '@nestjs/common';
 import { ProvisionService } from './provision.service';
 import { CreateProvisionDto } from './dto/create-provision.dto';
-import { UpdateProvisionDto } from './dto/update-provision.dto';
 import { BatchService } from '../batch/batch.service';
 import { CreateBatchDto } from '../dto';
 import { ApiTags } from '@nestjs/swagger';
@@ -37,7 +35,6 @@ export class ProvisionController {
       >;
       return await this.provisionService.createProvision(createProvisionDto);
     } catch (e) {
-      // console.log(e);
       throw new HttpException(e.message, HttpStatus.BAD_REQUEST);
     }
   }
@@ -47,7 +44,6 @@ export class ProvisionController {
     try {
       return await this.provisionService.complete(id);
     } catch (e) {
-      // console.log(e);
       throw new HttpException(e.message, HttpStatus.BAD_REQUEST);
     }
   }
@@ -59,7 +55,6 @@ export class ProvisionController {
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    // console.log("prq1:findOne")
     return this.provisionService.findOne(+id);
   }
 
@@ -83,18 +78,5 @@ export class ProvisionController {
       page,
       pageSize,
     );
-  }
-
-  @Patch(':id')
-  update(
-    @Param('id') id: string,
-    @Body() updateProvisionDto: UpdateProvisionDto,
-  ) {
-    return this.provisionService.update(+id, updateProvisionDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.provisionService.remove(+id);
   }
 }

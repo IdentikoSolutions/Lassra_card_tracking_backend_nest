@@ -14,7 +14,7 @@ export class Dispatch {
   @Column()
   destination: string;
   @Column({ default: 0 })
-  dispatchStatus: number; //0 is initial,1 is out for dispatch,2 is dispatched
+  dispatchStatus: number; //0 is initial,1 is ready for dispatch,2 is out for dispatch,3 dispatched, 4 cancelled
   @Column()
   createdBy?: string;
   //

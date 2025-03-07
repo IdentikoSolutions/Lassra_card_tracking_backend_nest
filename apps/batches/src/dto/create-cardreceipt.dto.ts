@@ -7,10 +7,6 @@ import { Type } from 'class-transformer';
 export class CreateCardReceiptDto {
   @IsString()
   @IsNotEmpty()
-  // @ApiProperty({
-  //   example: 'LAD09988776',
-  //   required: true,
-  // })
   lassraId: string;
   @IsDefined()
   @Type(() => CreateCardDto)

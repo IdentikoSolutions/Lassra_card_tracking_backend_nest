@@ -18,6 +18,17 @@ async function bootstrap() {
     .setDescription('Api for the card tracking project')
     .addServer('http://localhost:4000/', 'local dev')
     .addTag('Lassra internal Card Tracking portals')
+    .addBearerAuth(
+      {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT',
+        description: 'Input your jwt token',
+        name: 'authorization',
+        in: 'header',
+      },
+      'JWT',
+    )
     .build();
   const document = SwaggerModule.createDocument(app, options);
   SwaggerModule.setup('api-docs', app, document);

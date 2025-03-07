@@ -3,22 +3,18 @@ import {
   Injectable,
   Logger,
   NotFoundException,
-  OnModuleInit,
 } from '@nestjs/common';
 import { CreateDispatchDto } from './dto/create-dispatch.dto';
 import { UpdateDispatchDto } from './dto/update-dispatch.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Dispatch } from './entities/dispatch.entity';
-import { FindOneOptions, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { CardLocation } from './entities/location.entity';
 import { CardDispatch } from './entities/cardDispatch.entity';
-import { AppController } from '../app.controller';
-import amqp, { ChannelWrapper } from 'amqp-connection-manager';
-import { ConfirmChannel } from 'amqplib';
+import { ChannelWrapper } from 'amqp-connection-manager';
 import { CardRepository } from '../repository/card.repository';
 import { Card } from '../entities';
 import { DataSource } from 'typeorm';
-// import { Ctx, EventPattern, Payload, RmqContext } from '@nestjs/microservices';
 
 @Injectable()
 export class DispatchService {
@@ -62,8 +58,7 @@ export class DispatchService {
       const searchresult = await this.cardLocationRepository
         .createQueryBuilder('cardLocation')
         .leftJoinAndSelect('cardLocation.card', 'card')
-        .where('card.batchNo = :batchNo', { batchNo })
-        .andWhere('card.status = :status', { status })
+        .where('card.status = :status', { status })
         .andWhere('cardLocation.currentLocation = :currentLocation', {
           currentLocation,
         })
@@ -96,16 +91,63 @@ export class DispatchService {
   }
   //(2)Gett all cards
   async createDispatch(createDispatchDto: CreateDispatchDto) {
-    const cardData = createDispatchDto.cardDispatch.map((item) => ({
-      ...item,
-      dispatchStatus: 0,
-    }));
-
-    const DispData = { ...createDispatchDto, cardDispatch: cardData };
+    const DispData = {
+      ...createDispatchDto,
+    };
     try {
       const newDispatch = await this.dispatchRepository.create(DispData);
       return await this.dispatchRepository.save(newDispatch);
     } catch (e) {
+      throw new Error(e.message);
+    }
+  }
+  async addCardToDispatch(lassraId: string, dispatchId: number) {
+    try {
+      const dispatchOrder = await this.dispatchRepository.findOne({
+        where: {
+          id: dispatchId,
+        },
+      });
+      if (dispatchOrder.dispatchStatus !== 0) {
+        throw new Error(`Cannot add card to dispatch that is prepared`);
+      } else {
+        const cardDispatch = this.cardDispatchRepository.create({
+          lassraId,
+          destination: dispatchOrder.destination,
+          dispatchStatus: 0,
+          dispatch: dispatchOrder,
+        });
+        const result = await this.cardDispatchRepository.save(cardDispatch);
+        console.log(cardDispatch, result, 'from creat dispatch');
+
+        return result;
+      }
+    } catch (e) {
+      console.log(e);
+
+      throw new Error(e.massage);
+    }
+  }
+  async removeCardToDispatch(id: number, dispatchId: number) {
+    console.log(id, dispatchId);
+    try {
+      const dispatchOrder = await this.dispatchRepository.findOneBy({
+        id: dispatchId,
+      });
+      if (!dispatchOrder) {
+        throw new Error('Dispatch order not found');
+      }
+      if (dispatchOrder.dispatchStatus !== 0) {
+        throw new Error('Dispatched preparation completed already');
+      }
+      const cardDispatch = await this.cardDispatchRepository.findOneBy({ id });
+      if (!cardDispatch) {
+        throw new Error('Card dispatch not found');
+      }
+      return await this.cardDispatchRepository.remove(cardDispatch);
+    } catch (e) {
+      console.log(e);
+
       throw new Error(e.message);
     }
   }
@@ -114,7 +156,6 @@ export class DispatchService {
       where: { id },
       relations: ['cardDispatch'],
     });
-    // console.log(dispatchToUpdate, 'updateCardSDisppappe');
     if (!dispatchToUpdate) {
       throw new NotFoundException('Dispatch order  not found');
     }
@@ -141,7 +182,6 @@ export class DispatchService {
               if (newLocation) {
                 newLocation.currentLocation = newLocation.collectionCenter;
                 await this.cardLocationRepository.save(newLocation);
-                //*********Dispatch a message to external service to announce the new location of the card
               } else {
                 throw new Error('card location detail not found');
               }
@@ -151,7 +191,6 @@ export class DispatchService {
             }
           });
           const updated = await this.dispatchRepository.save(dispatchToUpdate);
-          // console.log(updated);
           await transactionManager.save(updated);
         },
       );
@@ -162,7 +201,6 @@ export class DispatchService {
   }
   // (4)
   async findAll() {
-    // console.log('rom findALL');
     try {
       return await this.dispatchRepository.find({});
     } catch (e) {
@@ -176,7 +214,6 @@ export class DispatchService {
         id,
       },
     });
-    // console.log(dispatch);
     try {
       if (dispatch) {
         return await this.cardDispatchRepository.find({
@@ -198,13 +235,5 @@ export class DispatchService {
     } catch (e) {
       throw new Error(e);
     }
-  }
-  // (7)
-  // update(id: number, updateDispatchDto: UpdateDispatchDto) {
-  //   return `This action updates a #${id} dispatch`;
-  // }
-  // (8)
-  remove(id: number) {
-    return `This action removes a #${id} dispatch`;
   }
 }

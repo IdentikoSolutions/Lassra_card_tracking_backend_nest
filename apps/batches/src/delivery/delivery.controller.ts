@@ -17,6 +17,8 @@ import { CreateDeliveryDto } from './dto/create-delivery.dto';
 import { UpdateDeliveryDto } from './dto/update-delivery.dto';
 import { CardService } from '../card/card.service';
 import { Response, response } from 'express';
+import { ApiTags } from '@nestjs/swagger';
+@ApiTags('delivery')
 @Controller('delivery')
 export class DeliveryController {
   constructor(
@@ -70,7 +72,7 @@ export class DeliveryController {
     }
     return await this.deliveryService.findDeliveryByStatus(...args);
   }
-  @Get() // get delivery all delivery request. if a query 'created' is added it get 
+  @Get() // get delivery all delivery request. if a query 'created' is added it get
   //request by status true/false true for delivery order created and false for not created.
   getRequest(@Query('created') created: string) {
     return this.deliveryService.getRequestForDelivery(created);
@@ -79,16 +81,6 @@ export class DeliveryController {
   //This endpoint create a new delivery order
   create(@Body() createDeliveryDto: CreateDeliveryDto[]) {
     return this.deliveryService.create(createDeliveryDto);
-  }
-
-  // @Get()
-  // findAll() {
-  //   return this.deliveryService.findAll();
-  // }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.deliveryService.findOne(+id);
   }
 
   @Patch('update/:id')
@@ -111,10 +103,5 @@ export class DeliveryController {
   updateMany(@Body() updateDeliveryDto: any[]) {
     // console.log('updateMany');
     return this.deliveryService.updateMany(updateDeliveryDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.deliveryService.remove(+id);
   }
 }

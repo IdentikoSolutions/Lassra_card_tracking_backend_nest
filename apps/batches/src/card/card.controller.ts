@@ -11,27 +11,25 @@ import {
   HttpException,
   HttpStatus,
   NotFoundException,
+  UseGuards,
+  Request,
 } from '@nestjs/common';
 import { CardService } from './card.service';
-import { CreateCardDto, UpdateCardDto } from '../dto';
-// import { EventPattern, Payload } from '@nestjs/microservices';
-import { Response } from 'express';
-
+import { UpdateCardDto } from '../dto';
+import JwtAuthGuard from '../auth/jwt-auth.guards';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+@ApiTags('card')
+@ApiBearerAuth('JWT')
 @Controller('card')
 export class CardController {
   constructor(private readonly cardService: CardService) {}
 
-  // @Post()
-  // create(@Body() createCardDto: CreateCardDto) {
-  //   return this.cardService.create(createCardDto);
-  // }
-
   @Get('count')
+  @ApiOperation({ summary: 'Get counts of cards by status' })
   async getCardsStatusCount(
     @Query('batchNo') batchNo: string,
     @Query('status') status: number,
   ) {
-    // console.log('bstv', batchNo);
     try {
       return await this.cardService.getCardCountByBatchNoAndStatus(
         batchNo,
@@ -42,13 +40,8 @@ export class CardController {
     }
   }
 
-  // @EventPattern('card_created')
-  // async CreateCard(@Payload() data: CreateCardDto) {
-  //   console.log('This will create a card');
-  // }
   @Get()
   findAll(@Query('batchNo') batchNo?: string) {
-    console.log('called');
     return this.cardService.findAll(batchNo);
   }
   @Get('retrival')
@@ -64,8 +57,10 @@ export class CardController {
       throw new Error(err);
     }
   }
+  @UseGuards(JwtAuthGuard)
   @Get('one/:lassraId')
-  findOne(@Param('lassraId') lassraId: string) {
+  findOne(@Param('lassraId') lassraId: string, @Request() req) {
+    console.log(req.user);
     try {
       return this.cardService.findOne(lassraId);
     } catch (e) {
@@ -86,14 +81,7 @@ export class CardController {
     return await this.cardService.relocationRequest(lassraId, newLocation);
   }
   @Post('request_delivery')
-  async requestDeliveryCard(
-    @Query('lassraId') lassraId: string,
-    // @Query('newLocation') newLocation: string,
-  ) {
+  async requestDeliveryCard(@Query('lassraId') lassraId: string) {
     return await this.cardService.requestDelivery(lassraId);
-  }
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.cardService.remove(+id);
   }
 }

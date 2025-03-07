@@ -16,28 +16,11 @@ export class ProvisionService {
     private readonly dataSource: DataSource,
   ) {}
   async createProvision(createProvisionDto: CreateProvisionDto) {
-    console.log(createProvisionDto, 'createProvision');
     try {
-      // await this.dataSource.manager.transaction(async (transactionManager) => {
       const newProvision = this.provisionRepository.create(createProvisionDto);
 
       await this.provisionRepository.save(newProvision);
-      // for (const card of createProvisionDto.cardProvision) {
-      //   const cardtoUpdate = await this.cardRepository.findOne({
-      //     where: { lassraId: card.lassraId },
-      //   });
-      //   if (cardtoUpdate.status < 1) {
-      //     throw new Error('Card has not been received');
-      //   }
-      //   if (cardtoUpdate && cardtoUpdate.status === 1) {
-      //     (await cardtoUpdate).status = 2;
-      //     await transactionManager.save(cardtoUpdate);
-      //   }
-      // }
-      console.log(newProvision);
       return newProvision;
-      // });
-      // return 'Provision created successfully';
     } catch (e) {
       throw new Error(e.message + 'Service error');
     }
@@ -118,13 +101,5 @@ export class ProvisionService {
     } catch (e) {
       throw new Error(e.message);
     }
-  }
-
-  update(id: number, updateProvisionDto: UpdateProvisionDto) {
-    return `This action updates a #${id} provision`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} provision`;
   }
 }

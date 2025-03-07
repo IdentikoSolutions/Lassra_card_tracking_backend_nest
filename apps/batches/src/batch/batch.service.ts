@@ -38,73 +38,41 @@ export class BatchService {
     page: number,
     pageSize: number,
   ) {
-    console.log(batchNo, jobNo, lassraId, page, pageSize);
-    const queryBuilder = this.batchRepository.createQueryBuilder('batch');
-    if (!batchNo && !jobNo && !lassraId)
-      throw new HttpException(
-        'supply your query params',
-        HttpStatus.BAD_REQUEST,
-      );
-    if (batchNo) {
-      queryBuilder.where('batch.batchNo = :batchNo', { batchNo });
+    try {
+      const queryBuilder = this.batchRepository.createQueryBuilder('batch');
+
+      if (batchNo) {
+        queryBuilder.where('batch.batchNo = :batchNo', { batchNo });
+      }
+      if (jobNo) {
+        queryBuilder.orWhere('batch.bankJobNo = :jobNo', { jobNo });
+      }
+      if (lassraId) {
+        queryBuilder.orWhere('batch.cards.lassraId = :lassraId', { lassraId });
+      }
+
+      const result = await queryBuilder.getOne();
+      if (result) {
+        return result;
+      } else {
+        console.log('check external record');
+        return 
+      }
+    } catch (err) {
+      throw new Error(err);
     }
-    if (jobNo) {
-      queryBuilder.orWhere('batch.bankJobNo = :jobNo', { jobNo });
-    }
-    if (lassraId) {
-      queryBuilder.orWhere('batch.cards.lassraId = :lassraId', { lassraId });
-    }
-
-    // Execute the query and return the results
-    return await queryBuilder
-      // .leftJoinAndSelect('batch.cards', 'cards')
-      .getOne();
-
-    // const receipts = await this.batchRepository
-    //   .createQueryBuilder('batch')
-    //   .leftJoinAndSelect('batch.cards', 'card')
-    //   .where('batch.batchNo = :batchNo', { batchNo })
-    //   .orWhere('batch.bankJobNo = :jobNo', { jobNo })
-    //   .orWhere('cards.lassraId = :lassraId', {
-    //     lassraId,
-    //   })
-    //   // .select([
-    //   //   'receipt.receivedBy',
-    //   //   'receipt.receivedAt',
-    //   //   'receipt.batchNo',
-    //   //   'receipt.id',
-    //   //   'receipt.receivedStatus',
-    //   //   'receipt.createdAt',
-    //   // ])
-    //   .orderBy('batch.id', 'ASC') // Order by id in ascending order
-
-    //   .skip((page - 1) * pageSize)
-    //   .take(pageSize)
-    //   .getManyAndCount();
-
-    // return receipts;
   }
 
   // @(2) get All receipt in a ?????
   async findAll() {
     try {
-      // return this.batchRepository
-      //   .createQueryBuilder('batch')
-      //   .leftJoinAndSelect('batch.cards', 'card')
-      //   .getMany();
       return await this.batchRepository.find({});
     } catch (err) {
       throw new HttpException(err, HttpStatus.NOT_FOUND);
     }
   }
-  // async findNotReceivedCards(batchNo){
-  //   await this.batchRepository.find({batchNo,{
-
-  //   }})
-  // }
   // (3) Get a single batch by batchNo
   async findOne(id: string) {
-    // console.log('EXECUTING',id);
     const batches = await this.batchRepository.find({
       where: { batchNo: id },
     });
@@ -119,7 +87,6 @@ export class BatchService {
     if (!batch) {
       throw new NotFoundException(`Batch with ID ${_id} not found`);
     } else {
-      // Delete the batch entity and its related entities
       await this.batchRepository.remove(batch);
       return 'Deleted successfully';
     }

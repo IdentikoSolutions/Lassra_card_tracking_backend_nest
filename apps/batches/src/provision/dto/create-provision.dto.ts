@@ -41,8 +41,8 @@ export class CreateProvisionDto {
   })
   batchNo: string;
 
-  // @Type(() => CreateBatchDto)
-  // batch?: CreateBatchDto;
+  @Type(() => CreateBatchDto)
+  batch?: CreateBatchDto;
 
 
   // @IsDefined()

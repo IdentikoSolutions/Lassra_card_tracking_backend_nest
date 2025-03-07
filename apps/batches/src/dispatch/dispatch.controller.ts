@@ -5,27 +5,18 @@ import {
   Body,
   Patch,
   Param,
-  Delete,
   Query,
   HttpException,
   HttpStatus,
 } from '@nestjs/common';
 import { DispatchService } from './dispatch.service';
 import { CreateDispatchDto } from './dto/create-dispatch.dto';
-import { UpdateDispatchDto } from './dto/update-dispatch.dto';
-import axios from 'axios';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CardLocation } from './entities/location.entity';
 import { Card } from '../entities';
-// import {
-//   Ctx,
-//   EventPattern,
-//   MessagePattern,
-//   Payload,
-//   RmqContext,
-// } from '@nestjs/microservices';
-
+import { ApiTags } from '@nestjs/swagger';
+@ApiTags('dispatch')
 @Controller('dispatch')
 export class DispatchController {
   constructor(
@@ -35,33 +26,32 @@ export class DispatchController {
     @InjectRepository(Card)
     private readonly cardRepository: Repository<Card>,
   ) {}
-  //Eventsaa
-  // @EventPattern({ cmd: 'relocation_request' })
-  // async UpdateCardRelocationStatus(
-  //   @Payload() data: any,
-  //   @Ctx() context: RmqContext,
-  // ) {
-  //   const channel = context.getChannelRef();
-  //   const originalMsg = context.getMessage();
-  //   console.log(originalMsg, 'eventPattern');
-
-  //   try {
-  //     await this.dispatchService.UpdateCardRelocationStatus(data);
-  //     console.log('Executeed here');
-  //     // channel.ack(originalMsg);
-  //     console.log('Executeed here 3');
-
-  //     return;
-  //   } catch (e) {
-  //     console.log(e, 'errrrrrrooooo');
-  //     // channel.nack(originalMsg, false, true);
-  //   }
-  //   //implement logic for updating relocation request
-  // }
 
   @Post()
   create(@Body() createDispatchDto: CreateDispatchDto) {
     return this.dispatchService.createDispatch(createDispatchDto);
+  }
+  @Post('addcard')
+  async addCardToDispatch(
+    @Query() data: { lassraId: string; dispatchId: number },
+  ) {
+    const { lassraId, dispatchId } = data;
+    try {
+      return await this.dispatchService.addCardToDispatch(lassraId, dispatchId);
+    } catch (e) {
+      throw new HttpException(e.message, HttpStatus.BAD_REQUEST);
+    }
+  }
+  @Post('remove')
+  async removeCardToDispatch(
+    @Query() data: { id: number; dispatchId: number },
+  ) {
+    const { id, dispatchId } = data;
+    try {
+      return await this.dispatchService.removeCardToDispatch(id, dispatchId);
+    } catch (e) {
+      throw new HttpException(e.message, HttpStatus.BAD_REQUEST);
+    }
   }
   @Get('seed')
   async seedcardLocation() {
@@ -81,7 +71,6 @@ export class DispatchController {
       for (const x of locationsData) {
         const newLocData = this.cardLocationRepository.create(x);
         await this.cardLocationRepository.save(newLocData);
-        console.log(newLocData);
       }
       return 'seeding successful';
     } catch (e) {
@@ -107,7 +96,6 @@ export class DispatchController {
   }
   @Get('orders')
   async findAll() {
-    console.log('COmtrollers');
     return await this.dispatchService.findAll();
   }
 
@@ -139,10 +127,5 @@ export class DispatchController {
     } catch (e) {
       throw new Error(e);
     }
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    // return this.dispatchService.remove(+id);
   }
 }

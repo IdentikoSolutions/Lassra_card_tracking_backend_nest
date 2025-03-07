@@ -4,17 +4,29 @@ import { DataSource, DataSourceOptions } from 'typeorm';
 
 config();
 const configService = new ConfigService();
-
 export const dataSourceOptions: DataSourceOptions = {
-  type: 'postgres',
-  host: configService.getOrThrow('POSTGRES_HOST'),
-  port: configService.getOrThrow('POSTGRES_PORT'),
-  database: configService.getOrThrow('POSTGRES_DATABASE'),
-  username: configService.getOrThrow('POSTGRES_USER'),
-  password: configService.getOrThrow('POSTGRES_PASSWORD'),
+  type: 'mssql',
+  host: configService.getOrThrow('SQL_SERVER_HOST'),
+  port: configService.getOrThrow('SQL_SERVER_PORT'),
+  username: configService.getOrThrow('SQL_SERVER_USERNAME'),
+  password: configService.getOrThrow('SQL_SERVER_PASSWORD'),
+  database: configService.getOrThrow('SQL_SERVER_DATABASE'),
   entities: [__dirname + '/../**/*.entity{.ts,.js}'],
   migrations: ['migrations/**'],
+  // options: {
+  //   encryption: true, // optional
+  // },
 };
+// export const dataSourceOptions: DataSourceOptions = {
+//   type: 'postgres',
+//   host: configService.getOrThrow('POSTGRES_HOST'),
+//   port: configService.getOrThrow('POSTGRES_PORT'),
+//   database: configService.getOrThrow('POSTGRES_DATABASE'),
+//   username: configService.getOrThrow('POSTGRES_USER'),
+//   password: configService.getOrThrow('POSTGRES_PASSWORD'),
+//   entities: [__dirname + '/../**/*.entity{.ts,.js}'],
+//   migrations: ['migrations/**'],
+// };
 //   type: 'postgres',
 //   host: 'localhost', //configService.get('POSTGRES_HOST'), //'localhost' || 'postgres', // You can use environment variables if needed
 //   port: 5432, //configService.get('POSTGRES_PORT'),

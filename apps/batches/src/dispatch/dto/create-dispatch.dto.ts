@@ -7,7 +7,7 @@ export class CreateDispatchDto {
   @IsNotEmpty()
   destination: string;
   @IsNumber()
-  dispatchStatus: number; //0 is initial,1 is out for dispatch,2 is dispatched
+  dispatchStatus: number; //0 is initiated,1 =created,2= out for dispatch,3 is dispatched, 4= cancelled
   @IsString()
   createdBy?: string;
   @IsDate()

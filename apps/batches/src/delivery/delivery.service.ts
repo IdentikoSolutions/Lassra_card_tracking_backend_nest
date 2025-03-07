@@ -127,10 +127,6 @@ export class DeliveryService {
   //   return `This action returns all delivery`;
   // }
 
-  findOne(id: number) {
-    return `This action returns a #${id} delivery`;
-  }
-
   async update(id: number, updateDeliveryDto: UpdateDeliveryDto) {
     try {
       const deliveryToUpdate = await this.deliveryRepository.findOne({
@@ -213,9 +209,5 @@ export class DeliveryService {
     } catch (err) {
       throw new Error(err);
     }
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} delivery`;
   }
 }

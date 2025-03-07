@@ -10,7 +10,6 @@ import {
 
 export class CreateCardDto {
   @IsString()
-  // @IsNotEmpty()
   @ApiProperty({
     example: '26',
     required: true,
@@ -18,7 +17,6 @@ export class CreateCardDto {
   batchNo: string;
 
   @IsString()
-  // @IsNotEmpty()
   @ApiProperty({
     example: 'Isolo',
     required: true,

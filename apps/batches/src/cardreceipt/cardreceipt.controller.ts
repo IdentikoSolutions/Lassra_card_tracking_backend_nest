@@ -11,14 +11,16 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { CardReceiptService } from './cardreceipt.service';
-// import { CreateCardReceiptDto } from '../dto/create-cardreceipt.dto';
-// import { UpdateCardReceiptDto } from '../dto/update-cardreceipt.dto';
-
+import { ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { CreateCardReceiptDto } from '../dto';
+@ApiTags('card receipt')
 @Controller('cardreceipt')
 export class CardReceiptController {
   constructor(private readonly cardReceiptService: CardReceiptService) {}
 
   @Post()
+  @ApiOperation({ summary: 'Create card receipt' })
+  @ApiBody({ type: CreateCardReceiptDto })
   async create(@Body() body: { lassraId: string; receiptId: number }) {
     try {
       const { lassraId, receiptId } = body;
@@ -29,25 +31,8 @@ export class CardReceiptController {
   }
 
   @Get()
+  @ApiOperation({ summary: 'Fetch card receipts' })
   async findAll(@Query('receipt_id') receipt_id: number) {
     return await this.cardReceiptService.findAll(receipt_id);
   }
-
-  // @Get(':id')
-  // findOne(@Param('id') id: string) {
-  //   return this.cardReceiptService.findOne(+id);
-  // }
-
-  // @Patch(':id')
-  // update(
-  //   @Param('id') id: string,
-  //   @Body() updateCardReceiptDto: UpdateCardReceiptDto,
-  // ) {
-  //   return this.cardReceiptService.update(+id, updateCardReceiptDto);
-  // }
-
-  // @Delete(':id')
-  // remove(@Param('id') id: string) {
-  //   return this.cardReceiptService.remove(+id);
-  // }
 }

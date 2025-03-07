@@ -22,7 +22,6 @@ import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class RetrivalService {
-  // private webhookClient: ClientProxy;
   constructor(
     @InjectRepository(Retrival)
     private readonly retrivalRepository: Repository<Retrival>,
@@ -31,41 +30,11 @@ export class RetrivalService {
     @InjectRepository(CardLocation)
     private readonly cardLocationRepository: Repository<CardLocation>,
     private configService: ConfigService, // @Inject('WEBHOOK_SERVICE') private readonly webhookClient: ClientProxy,
-  ) {
-    // this.webhookClient = ClientProxyFactory.create({
-    //   transport: Transport.RMQ,
-    //   options: {
-    //     urls: [
-    //       configService.get('RABBIT_MQ_URI'),
-    //       // 'amqps://jzzeeyil:7KLJorTAsikZBbvXSt9eJ8xizBcYouuK@lionfish.rmq.cloudamqp.com/jzzeeyil',
-    //     ],
-    //     queue: 'webhook',
-    //     noAck: false,
-    //     queueOptions: {
-    //       durable: true,
-    //       arguments: {
-    //         'x-message-ttl': 30 * 24 * 60 * 60 * 1000, // 30 days TTL
-    //         'x-dead-letter-exchange': '', // Default exchange
-    //         'x-dead-letter-routing-key': 'dead_letter_queue', // DLQ routing key
-    //       },
-    //     },
-    //   },
-    // });
-  }
-  // async requestDelivery(data: any) {
-  //   console.log(data, 'retrival service');
-
-  //   try {
-  //     this.webhookClient.emit({ cmd: 'relocation_request' }, data);
-  //   } catch (e) {
-  //     throw new Error(e);
-  //   }
-  // }
+  ) {}
 
   async create(createRetrivalDto: CreateRetrivalDto) {
     try {
       const newRetrival = this.retrivalRepository.create(createRetrivalDto);
-      console.log(newRetrival);
 
       return await this.retrivalRepository.save(newRetrival);
     } catch (e) {
@@ -82,18 +51,6 @@ export class RetrivalService {
   }
 
   async findOne(id: number) {
-    // try {
-    //   const queryBuilder = await this.retrivalRepository.createQueryBuilder(
-    //     'retrival',
-    //   );
-    //   queryBuilder
-    //     .leftJoinAndSelect('retrival.cardRetrival', 'cardRetrival')
-    //     .where('retrival.id= :id', { id })
-    //     .getOne();
-    //   return queryBuilder;
-    // } catch (e) {
-    //   throw new Error(e);
-    // }
     try {
       const retrival = await this.retrivalRepository.findOne({
         where: { id: id },
@@ -108,9 +65,6 @@ export class RetrivalService {
   }
 
   async update(id: number, updateRetrivalDto: UpdateRetrivalDto) {
-    // console.log(this.webhookClient?.emit(),'WEBHOOK client');
-    // this.producerService.addToMessage('testing');
-    // this.webhookClient.emit('update', 'Update');
     try {
       const retrivalToUpdate = await this.retrivalRepository.findOne({
         where: { id },
@@ -146,11 +100,6 @@ export class RetrivalService {
                   locationdetail,
                 );
               }
-              // this.webhookClient.emit(
-              //   { cmd: 'card_relocated' },
-              //   cardRetrivalItem,
-              // );
-
               return cardRetrivalItem;
             }
             return cardRetrivalItem;
@@ -165,9 +114,5 @@ export class RetrivalService {
     } catch (e) {
       throw new Error(e);
     }
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} retrival`;
   }
 }

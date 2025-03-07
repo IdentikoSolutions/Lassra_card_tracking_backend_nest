@@ -2,8 +2,7 @@ import { HttpException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Card, Receipt } from '../entities';
 import { CardRepository, ReceiptRepository } from '../repository';
-import { CreateReceiptDto, UpdateReceiptDto } from '../dto';
-import { HttpStatusCode } from 'axios';
+import { CreateReceiptDto } from '../dto';
 import { DataSource } from 'typeorm';
 
 @Injectable()
@@ -106,13 +105,5 @@ export class ReceiptService {
       .getManyAndCount();
 
     return receipts;
-  }
-
-  update(id: number, updateReceiptDto: UpdateReceiptDto) {
-    return `This action updates a #${id} card`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} card`;
   }
 }

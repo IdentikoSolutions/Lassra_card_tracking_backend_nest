@@ -5,17 +5,15 @@ import {
   Body,
   Patch,
   Param,
-  Delete,
   HttpException,
   HttpStatus,
   Query,
-  HttpCode,
 } from '@nestjs/common';
 import { ReceiptService } from './receipt.service';
 import { BatchService } from '../batch/batch.service';
-import { CreateBatchDto, CreateReceiptDto, UpdateReceiptDto } from '../dto';
-import { Batch } from '../entities';
-
+import { CreateBatchDto } from '../dto';
+import { ApiTags } from '@nestjs/swagger';
+@ApiTags('receipts')
 @Controller('receipt')
 export class ReceiptController {
   constructor(
@@ -25,12 +23,10 @@ export class ReceiptController {
 
   @Post()
   async createReceipt(@Body() createReceiptDto: any) {
-    // console.log(createReceiptDto, 'create');
     try {
       const currentBatch = await this.batchService.findOne(
         createReceiptDto.batchNo,
       );
-      // console.log(currentBatch, 'current batch');
       createReceiptDto.batch = currentBatch as unknown as Omit<
         CreateBatchDto,
         'id'
@@ -70,17 +66,6 @@ export class ReceiptController {
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    // console.log('findOnehere')
     return this.receiptService.findOne(id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateReceiptDto: UpdateReceiptDto) {
-    return this.receiptService.update(+id, updateReceiptDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.receiptService.remove(+id);
   }
 }

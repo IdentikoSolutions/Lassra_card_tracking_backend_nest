@@ -73,24 +73,13 @@ export class BatchController {
                 currentLocation: 'Head office',
                 collectionCenter: item.contacT_LGA,
               },
-              //item.status,
             };
             return editedResident;
           });
-          // console.log(item, ' ITEM');
           return item;
         }),
       );
-      // const rows = resultModified
-      //   .filter((row) => row.status === 'fulfilled')
-      //   .map((row) => row.value);
-      // // console.log(rows);
-      // const x = resultModified[0];
-      // console.log(x, 'this is my x');
-      // x.status === 'fulfilled' && (await this.batchService.createBatch(x.value));
-      // // console.log(resultModified, 'THZEDGSHH');
       for (const x of resultModified) {
-        // console.log(x, 'XXXX');
         try {
           x.status === 'fulfilled' &&
             (await this.batchService.createBatch(x.value));
@@ -98,8 +87,6 @@ export class BatchController {
           throw new HttpException(e, HttpStatus.CONFLICT);
         }
       }
-      // const create = await this.batchService.createBatch(resultModified[0]);
-      // console.log(create, 'create');
       return 'seeding successful';
     } catch (e) {
       throw new HttpException('Database already seeded', HttpStatus.FORBIDDEN);
@@ -113,40 +100,21 @@ export class BatchController {
     @Query('page') page: number | undefined = 1,
     @Query('pageSize') pageSize: number | undefined = 10,
   ) {
-    // if (!batchNo && !jobNo && !lassraId)
-    //   throw new HttpException(
-    //     'Provide bathcNo, JobNo or lassraId',
-    //     HttpStatus.BAD_REQUEST,
-    //   );
-    return this.batchService.search(batchNo, jobNo, lassraId, page, pageSize);
+    try {
+      return this.batchService.search(batchNo, jobNo, lassraId, page, pageSize);
+    } catch (e: any) {
+      throw new HttpException(e.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
   }
 
   @Get()
   findAll() {
     return this.batchService.findAll();
   }
-  // @Post('card')
-  // createCard(@Body() createCardDto: CreateCardDto) {
-  //   return this.batchService.createCard(createCardDto);
-  // }
-
   @Get(':id')
   async findOne(@Param('id') id: string) {
     return await this.batchService.findOne(id);
   }
-  // @Put(':id')
-  // async updateCardReceiptStatus(
-  //   @Param() id: number,
-  //   @Query('lassraid') lassraid: string,
-  // ) {
-  //   console.log(id, lassraid, 'param and query');
-  //   return this.batchService.updateCard(id, lassraid);
-  // }
-
-  // @Patch(':id')
-  // update(@Param('id') id: string, @Body() updateBatchDto: UpdateBatchDto) {
-  //   return this.batchService.update(id, updateBatchDto);
-  // }
 
   @Delete(':id')
   remove(@Param('id') id: string) {

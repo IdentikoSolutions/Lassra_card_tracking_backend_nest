@@ -11,9 +11,10 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { CardprovisionService } from './cardprovision.service';
+import { ApiTags } from '@nestjs/swagger';
 // import { CreateCardProvisionDto } from './dto/create-cardprovision.dto';
 // import { UpdateCardprovisionDto } from './dto/update-cardprovision.dto';
-
+@ApiTags('cardprovision')
 @Controller('cardprovision')
 export class CardprovisionController {
   constructor(private readonly cardprovisionService: CardprovisionService) {}
